@@ -173,17 +173,22 @@ void HelloCardboardApp::SetScreenParams(int width, int height) {
   screen_params_changed_ = true;
 }
 
+
+//normal VR
 void HelloCardboardApp::realization0(float mainAngle) {
     rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
 }
 
 
+//non-linear amp
 void HelloCardboardApp::realizationA(float mainAngle) {
   float alpha = (float)abs(cos(-mainAngle*PI/180));
   mainAngle = (2.0f - alpha) * (-mainAngle);
   rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
 }
 
+
+//auto rotation
 void HelloCardboardApp::realizationB(float mainAngle) {
   if (mainAngle > aAngle) {
     flag = (aStep+flag) > 1 ? 1 : (aStep+flag);
@@ -218,6 +223,8 @@ void HelloCardboardApp::realizationB(float mainAngle) {
   rotateM(rotated_head_view_, theta, head_view_, 0, 1, 0);
 }
 
+
+//save for test, also can be used as linear amp
 void HelloCardboardApp::realizationC(float mainAngle) {
   //theta -= amp * std::max((float)(std::abs(mainAngle - lAngle) * 180 / PI / lowSpeed), 1.0f) * (mainAngle - lAngleUse);
   if (firstIn) offset = theta;
@@ -227,14 +234,14 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 }
 
+
+//TODO: return an array ?
 float HelloCardboardApp::OnDrawFrame(float _amp) {
   if (!UpdateDeviceParams()) {
     return 0.0f;
   }
-  // get initialized angles!
 
   lAngle = angle[1];
-  //try
 
   // Update Head Pose.
   head_view_ = GetPose();
@@ -251,7 +258,8 @@ float HelloCardboardApp::OnDrawFrame(float _amp) {
   }
   for (int i = 0; i < 3; ++i) {
     angle[i] = *(eulerAngle+i);
-    angle[i] = (angle[i]-abAngle[i]) * 180 / PI;
+    if (PLAN == 1 || PLAN == 2) angle[i] = (angle[i]-iniAngle[i]) * 180 / PI;
+    else if (PLAN == 3) angle[i] = (angle[i]-abAngle[i]) * 180 / PI;
   }
   amp = _amp;
 
