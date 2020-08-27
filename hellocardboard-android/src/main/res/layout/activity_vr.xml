@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Default UiLayer layout that assumes landscape orientation !-->
+    <!-- The ui and settings button holders are 84dp. This is twice the size -->
+    <!-- of the button itself after padding (24dp image, 9dp padding twice). -->
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/surface_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="top" />
+
+    <FrameLayout
+        android:id="@+id/ui_back_button_holder"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="84dp"
+        android:layout_height="84dp">
+        <ImageButton
+            style="@style/UiButton"
+            android:id="@+id/ui_back_button"
+            android:contentDescription="back"
+            android:src="@drawable/quantum_ic_close_white_24"
+            android:layout_gravity="start|top"
+            android:onClick="closeSample"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/buttonOne"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_width="84dp"
+        android:layout_height="170dp">
+
+        <ImageButton
+            android:id="@+id/upButton"
+            style="@style/UiButton"
+            android:layout_width="67dp"
+            android:layout_height="69dp"
+            android:layout_gravity="center|top"
+            android:contentDescription="raise the amplification"
+            android:onClick="raiseAmp"
+            android:src="@drawable/quantum_ic_close_white_24" />
+
+        <ImageButton
+            android:id="@+id/downButton"
+            style="@style/UiButton"
+            android:layout_width="67dp"
+            android:layout_height="69dp"
+            android:layout_gravity="center|bottom"
+            android:contentDescription="lower the amplification"
+            android:onClick="lowerAmp"
+            android:src="@drawable/quantum_ic_close_white_24" />
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/ui_alignment_marker"
+        android:layout_width="@dimen/alignment_marker_thickness"
+        android:layout_height="@dimen/alignment_marker_height"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:background="@color/alignment_marker_color">
+    </RelativeLayout>
+
+    <FrameLayout
+        android:id="@+id/ui_settings_button_holder"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="42dp"
+        android:layout_height="42dp">
+        <ImageButton
+            style="@style/UiButton"
+            android:id="@+id/ui_settings_button"
+            android:contentDescription="settings"
+            android:src="@drawable/quantum_ic_settings_white_24"
+            android:layout_gravity="end|top"
+            android:onClick="showSettings"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/head_speed_show"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="60dp"
+        android:layout_height="42dp">
+        <TextView
+            android:id="@+id/txtOne"
+            android:layout_width="60dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="0.0f"
+            android:textColor="#EA5246"
+            android:textStyle="bold|italic"
+            android:background="#000000"
+            android:textSize="18sp"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/amp_show"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="60dp"
+        android:layout_height="42dp">
+        <TextView
+            android:id="@+id/txtTwo"
+            android:layout_width="60dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="0.0f"
+            android:textColor="#EA5246"
+            android:textStyle="bold|italic"
+            android:background="#000000"
+            android:textSize="18sp"/>
+    </FrameLayout>
+    <FrameLayout
+        android:layout_width="500dp"
+        android:layout_height="50dp"
+        android:layout_centerInParent="true" >
+        <ProgressBar
+            android:id="@+id/progress_bar1"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:max="100"
+            android:progress="0" />
+        <ProgressBar
+            android:id="@+id/progress_bar2"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:max="100"
+            android:progress="0" />
+    </FrameLayout>
+</RelativeLayout>
