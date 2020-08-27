@@ -234,7 +234,7 @@ float HelloCardboardApp::OnDrawFrame(float _amp) {
   // get initialized angles!
 
   lAngle = angle[1];
-
+  //try
 
   // Update Head Pose.
   head_view_ = GetPose();
