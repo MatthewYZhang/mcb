@@ -251,7 +251,7 @@ class HelloCardboardApp {
   float offset = 0.0f;
   //initial amplification parameter
   float amp = 1.0f;
-  //do test to set these three speed
+  //TODO do test to set these three speed
   float lowSpeed = 0.3f;
   float midSpeed = 0.8f;
   float highSpeed = 1.5f;

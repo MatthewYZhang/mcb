@@ -259,7 +259,7 @@ float HelloCardboardApp::OnDrawFrame(float _amp) {
   for (int i = 0; i < 3; ++i) {
     angle[i] = *(eulerAngle+i);
     if (PLAN == 1 || PLAN == 2) angle[i] = (angle[i]-iniAngle[i]) * 180 / PI;
-    else if (PLAN == 3) angle[i] = (angle[i]-abAngle[i]) * 180 / PI;
+    else if (PLAN == 3 || PLAN == 0) angle[i] = (angle[i]-abAngle[i]) * 180 / PI;
   }
   amp = _amp;
 
