@@ -17,6 +17,7 @@ package com.google.cardboard;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,12 +25,12 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -44,7 +45,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import java.io.File;
 import java.util.Date;
+import java.io.FileOutputStream;
 
 
 /**
@@ -128,6 +132,20 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
 
     // Prevents screen from dimming/locking.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+  }
+
+  //TODO: Log the rotation speed, angle etc.
+  private void createLogFile() {
+    String path = Environment.getExternalStorageDirectory() + "/Cardboard";
+    try {
+      FileOutputStream fos = new FileOutputStream(path+"/log.txt");
+      String info = "hello world";
+      fos.write(info.getBytes());
+      fos.flush();
+      fos.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
