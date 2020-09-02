@@ -33,6 +33,11 @@
                          [CHAR_LIMIT=30]">
             Switch Plan</string>
 
+    <string name="change_target_speed"
+        description="Short text shown on the settings menu to let the user switch plans.
+                         [CHAR_LIMIT=30]">
+            Change Target Speed</string>
+
     <string name="change_experiment"
         description="Short text shown on the settings menu to let the user switch plans.
                          [CHAR_LIMIT=30]">

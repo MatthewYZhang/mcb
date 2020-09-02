@@ -71,7 +71,7 @@ class HelloCardboardApp {
   /**
    * Draws the scene. This should be called on the rendering thread.
    */
-  float OnDrawFrame(float amp);
+  void OnDrawFrame(float amp);
 
   /**
    * Hides the target object if it's being targeted.
@@ -257,6 +257,10 @@ class HelloCardboardApp {
   float offset = 0.0f;
   //initial amplification parameter
   float amp = 1.0f;
+  float angleDiff = 0.0f;
+  // if direction < 0: acceleration to left; else acceleration to right
+  float direction = 0.0f;
+
   //TODO do test to set these three speed
   float lowSpeed = 0.3f;
   float midSpeed = 0.8f;

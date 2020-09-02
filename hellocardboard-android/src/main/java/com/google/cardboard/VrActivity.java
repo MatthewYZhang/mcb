@@ -72,7 +72,10 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   float bAngle = 0.0f;
   float maxAngle = 0.0f;
   float angleDiff = 0.0f;
-  float targetAngle = 60.0f;
+  float nowAngle = 0.0f;
+  float targetSpeed = 60.0f;
+  float direction = 0.0f;
+  boolean start = false;
   //Date date;
   int counter = 0;
   int refreshRate = 10;
@@ -91,9 +94,6 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     super.onCreate(savedInstance);
     //date = new Date();
     nativeApp = nativeOnCreate(getAssets());
-    float[] test = nativeTestReturnVector(nativeApp);
-    if(test == null) System.out.println("is null");
-    else System.out.println(test[1]);
     setContentView(R.layout.activity_vr);
     glView = findViewById(R.id.surface_view);
     glView.setEGLContextClientVersion(2);
@@ -202,15 +202,22 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       TextView t1 = (TextView) findViewById(R.id.txtOne);
       TextView t2 = (TextView) findViewById(R.id.txtTwo);
       ProgressBar p1 = (ProgressBar) findViewById(R.id.progress_bar1);
-      ProgressBar p2 = (ProgressBar) findViewById(R.id.progress_bar2);
-      angleDiff = nativeOnDrawFrame(nativeApp, amp);
-      Log.e("time:", System.currentTimeMillis() + "");
+      nativeOnDrawFrame(nativeApp, amp);
 
+      float[] tmp = nativeTestReturnVector(nativeApp);
+      // use the following results
+      angleDiff = tmp[1]; maxAngle = tmp[2]; nowAngle = tmp[3]; direction = tmp[4];
+      // use System.currentTimeMillis() to read time
+      // direction > 0 means speed to right; else speed to left
+      if (start) {}
+      // todo: record logic here, when left button is pressed(for the first time), start == true
+
+      // show related numbers on screen
       if (counter == 0) {
         t1.setText(angleDiff+"");
         Log.e("angleDiff", angleDiff+"");
-        p1.setProgress((int)(angleDiff/(2*targetAngle)*100));
-        p2.setProgress((int)(angleDiff/(2*targetAngle)*100));
+        Log.e("Direction", direction+"");
+        p1.setProgress((int)(angleDiff/(2*targetSpeed)*100));
         counter++;
       }
       else {
@@ -225,6 +232,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     Log.d(TAG, "Leaving VR sample");
     finish();
   }
+
+  public void changeStatus(View view) { start = !start; }
 
   public void raiseAmp(View view) {
     amp += 0.05f;
@@ -292,6 +301,31 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
         public void onClick(DialogInterface dialogInterface, int i) {
           Log.e("select", items[i]);
           nativeSwitchPlan(nativeApp, i);
+        }
+      });
+      builder.show();
+      return true;
+    }
+    else if (item.getItemId() == R.id.change_target_speed) {
+      LayoutInflater factory = LayoutInflater.from(this);
+      final View textEntryView = factory.inflate(R.layout.set_parameter, null);
+      final EditText edit_target_speed = (EditText) textEntryView.findViewById(R.id.edit_target_speed);
+
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Change Target Speed");
+      builder.setIcon(android.R.drawable.ic_dialog_info);
+      builder.setView(textEntryView);
+      builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+          String str_targetSpeed = edit_target_speed.getText().toString();
+          targetSpeed = Float.parseFloat(str_targetSpeed);
+
+        }
+      });
+      builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
         }
       });
       builder.show();

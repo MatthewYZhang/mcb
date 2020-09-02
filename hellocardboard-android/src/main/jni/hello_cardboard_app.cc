@@ -234,11 +234,21 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 }
 
+std::vector<float> HelloCardboardApp::ReturnVector() {
+    std::vector<float> res;
+    res.push_back(amp);
+    res.push_back(angleDiff);
+    res.push_back(maxAngle);
+    res.push_back(abAngle[1]);
+    res.push_back(direction);
+    return res;
+}
+
 
 //TODO: return an array ?
-float HelloCardboardApp::OnDrawFrame(float _amp) {
+void HelloCardboardApp::OnDrawFrame(float _amp) {
   if (!UpdateDeviceParams()) {
-    return 0.0f;
+    return;
   }
 
   lAngle = angle[1];
@@ -330,7 +340,9 @@ float HelloCardboardApp::OnDrawFrame(float _amp) {
   CHECKGLERROR("onDrawFrame");
   //return maxAngle;
   //return theta;
-  return std::abs(lAngle-angle[1]) * 180 / PI;
+  direction = lAngle - angle[1] > 0 ? 1 : -1;
+  angleDiff = std::abs(lAngle-angle[1]) * 180 / PI;
+  return;
   //return amp;
 }
 
@@ -628,9 +640,6 @@ bool HelloCardboardApp::IsPointingAtTarget() {
   return angle < kAngleLimit;
 }
 
-std::vector<float> HelloCardboardApp::ReturnVector() {
-  std::vector<float> res = {1.0, 2.0, 3.0};
-  return res;
-}
+
 
 }  // namespace ndk_hello_cardboard

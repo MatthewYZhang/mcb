@@ -59,7 +59,7 @@ JNI_METHOD(void, nativeOnSurfaceCreated)
   native(native_app)->OnSurfaceCreated(env);
 }
 
-JNI_METHOD(float, nativeOnDrawFrame)
+JNI_METHOD(void, nativeOnDrawFrame)
 (JNIEnv* env, jobject obj, jlong native_app, jfloat amp) {
   return native(native_app)->OnDrawFrame(amp);
   //TODO: Here we can change the onDrawFrame return value to monitor the maxAngle
