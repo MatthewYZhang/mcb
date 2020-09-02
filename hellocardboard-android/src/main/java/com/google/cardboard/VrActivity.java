@@ -91,7 +91,9 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     super.onCreate(savedInstance);
     //date = new Date();
     nativeApp = nativeOnCreate(getAssets());
-
+    float[] test = nativeTestReturnVector(nativeApp);
+    if(test == null) System.out.println("is null");
+    else System.out.println(test[1]);
     setContentView(R.layout.activity_vr);
     glView = findViewById(R.id.surface_view);
     glView.setEGLContextClientVersion(2);
@@ -370,4 +372,6 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   private native void nativeSetParameter(long nativeApp, float aSp, float bSp, float aAn, float bAn);
 
   private native void nativeSwitchPlan(long nativeApp, int p);
+
+  private native float[] nativeTestReturnVector(long nativeApp);
 }

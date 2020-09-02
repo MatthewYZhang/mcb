@@ -96,4 +96,13 @@ JNI_METHOD(void, nativeSwitchPlan)
   native(native_app)->SwitchPlan(flg);
 }
 
+JNI_METHOD(jfloatArray, nativeTestReturnVector)
+(JNIEnv* env, jobject obj, jlong native_app) {
+    std::vector<float> temp = native(native_app)->ReturnVector();
+    jfloatArray res = env->NewFloatArray(temp.size());
+    if(res == NULL) return NULL;
+    env->SetFloatArrayRegion( res, 0, temp.size(), &temp[0] );
+    return res;
+}
+
 }  // extern "C"

@@ -103,6 +103,12 @@ class HelloCardboardApp {
    */
   void SwitchPlan(int flg);
 
+  /**
+   * Method for testing return a vector to jni
+   * @return
+   */
+  std::vector<float> ReturnVector();
+
  private:
   /**
    * Default near clip plane z-axis coordinate.

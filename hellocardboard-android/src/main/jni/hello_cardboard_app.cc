@@ -628,6 +628,9 @@ bool HelloCardboardApp::IsPointingAtTarget() {
   return angle < kAngleLimit;
 }
 
-
+std::vector<float> HelloCardboardApp::ReturnVector() {
+  std::vector<float> res = {1.0, 2.0, 3.0};
+  return res;
+}
 
 }  // namespace ndk_hello_cardboard
