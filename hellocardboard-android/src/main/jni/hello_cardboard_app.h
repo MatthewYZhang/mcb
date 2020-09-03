@@ -235,6 +235,8 @@ class HelloCardboardApp {
   float angle[3];
   //abAngle array is used in Plan 3, records the real head_view
   float abAngle[3];
+
+  float rAngle[3];
   int PLAN = 0;
   // the following members are used by Plan 2
   float flag = 0.0f;
