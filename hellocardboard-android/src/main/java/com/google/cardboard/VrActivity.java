@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -75,12 +76,16 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   float nowAngle = 0.0f;
   float targetSpeed = 60.0f;
   float direction = 0.0f;
-  boolean start = false;
+
   //Date date;
   int counter = 0;
   int refreshRate = 10;
   float amp = 1.0f;
 
+  //Control variables for logging
+  private boolean start = false;
+  private FileOutputStream logFile;
+  private String path = Environment.getExternalStorageDirectory() + "/Cardboard";
 
   // Opaque native pointer to the native CardboardApp instance.
   // This object is owned by the VrActivity instance and passed to the native methods.
@@ -140,7 +145,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   private void createLogFile() {
     String path = Environment.getExternalStorageDirectory() + "/Cardboard";
     try {
-      FileOutputStream fos = new FileOutputStream(path+"/log.txt");
+      FileOutputStream fos = new FileOutputStream(path+"/log-" + System.currentTimeMillis() + ".txt");
       String info = "hello world";
       fos.write(info.getBytes());
       fos.flush();
@@ -209,7 +214,14 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       angleDiff = tmp[1]; maxAngle = tmp[2]; nowAngle = tmp[3]; direction = tmp[4];
       // use System.currentTimeMillis() to read time
       // direction > 0 means speed to right; else speed to left
-      if (start) {}
+      if (start) {
+        try {
+          String data = direction + "," + nowAngle + "\n";
+          logFile.write(data.getBytes());
+        } catch(Exception e) {
+          e.printStackTrace();
+        }
+      }
       // todo: record logic here, when left button is pressed(for the first time), start == true
 
       // show related numbers on screen
@@ -217,6 +229,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
         t1.setText(angleDiff+"");
         Log.e("angleDiff", angleDiff+"");
         Log.e("Direction", direction+"");
+        Log.e("NowAngle", nowAngle+"");
         p1.setProgress((int)(angleDiff/(2*targetSpeed)*100));
         counter++;
       }
@@ -233,7 +246,28 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     finish();
   }
 
-  public void changeStatus(View view) { start = !start; }
+  public void changeStatus(View view) { //S denotes start, E denotes end
+    Button statusButton = (Button)findViewById(R.id.changeStatus);
+    if(start == true) {
+      statusButton.setText("S");
+      try {
+        logFile.close();
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
+    } else {
+      statusButton.setText("E");
+      try {
+        logFile = new FileOutputStream(path+"/log-" + System.currentTimeMillis() + ".txt");
+        String info = "hello world";
+        logFile.write(info.getBytes());
+        logFile.flush();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    start = !start;
+  }
 
   public void raiseAmp(View view) {
     amp += 0.05f;

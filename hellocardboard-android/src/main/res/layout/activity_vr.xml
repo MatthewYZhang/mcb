@@ -60,18 +60,17 @@
         android:id="@+id/buttonLeft"
         android:layout_alignParentEnd="false"
         android:layout_centerVertical="true"
-        android:layout_width="84dp"
+        android:layout_width="50dp"
         android:layout_height="170dp">
 
-        <ImageButton
+        <Button
             android:id="@+id/changeStatus"
-            style="@style/UiButton"
-            android:layout_width="67dp"
+            android:layout_width="50dp"
             android:layout_height="69dp"
             android:layout_gravity="center"
             android:contentDescription="Click to Start/End recording"
             android:onClick="changeStatus"
-            android:src="@drawable/quantum_ic_close_white_24" />
+            android:text="S" />
     </FrameLayout>
 
     <RelativeLayout
