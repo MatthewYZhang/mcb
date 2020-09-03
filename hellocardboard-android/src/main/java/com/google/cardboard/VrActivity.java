@@ -211,7 +211,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       // direction > 0 means speed to right; else speed to left
       if (start) {}
       // todo: record logic here, when left button is pressed(for the first time), start == true
-
+      Log.e("nowAngle", nowAngle+"");
       // show related numbers on screen
       if (counter == 0) {
         t1.setText(angleDiff+"");
@@ -308,7 +308,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     }
     else if (item.getItemId() == R.id.change_target_speed) {
       LayoutInflater factory = LayoutInflater.from(this);
-      final View textEntryView = factory.inflate(R.layout.set_parameter, null);
+      final View textEntryView = factory.inflate(R.layout.change_speed, null);
       final EditText edit_target_speed = (EditText) textEntryView.findViewById(R.id.edit_target_speed);
 
       AlertDialog.Builder builder = new AlertDialog.Builder(this);
