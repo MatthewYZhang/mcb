@@ -94,7 +94,7 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_
       target_object_meshes_(kTargetMeshCount),
       target_object_not_selected_textures_(kTargetMeshCount),
       target_object_selected_textures_(kTargetMeshCount),
-      cur_target_object_(RandomUniformInt(kTargetMeshCount)) {
+      cur_target_object_(1) {
   JNIEnv* env;
   vm->GetEnv((void**)&env, JNI_VERSION_1_6);
   java_asset_mgr_ = env->NewGlobalRef(asset_mgr_obj);
@@ -162,7 +162,18 @@ void HelloCardboardApp::OnSurfaceCreated(JNIEnv* env) {
       env, java_asset_mgr_, "TriSphere_Pink_BakedDiffuse.png"));
 
   // Target object first appears directly in front of user.
-  model_target_ = GetTranslationMatrix({0.0f, 1.5f, kMinTargetDistance});
+
+  float angle = -M_PI/2 + 0.4*M_PI;
+  float distance = kMinTargetDistance;
+  float height = 1.5f;
+  std::array<float, 3> target_position = {std::cos(angle) * distance, height,
+                                          std::sin(angle) * distance};
+  model_target_ = GetTranslationMatrix(target_position);
+
+  angle = -M_PI/2 - 0.4*M_PI;
+  target_position = {std::cos(angle) * distance, height,
+                     std::sin(angle) * distance};
+  model_target_1_ = GetTranslationMatrix(target_position);
 
   CHECKGLERROR("OnSurfaceCreated");
 }
@@ -325,7 +336,9 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     Matrix4x4 projection_matrix =
         GetMatrixFromGlArray(projection_matrices_[eye]);
     Matrix4x4 modelview_target = eye_view * model_target_;
+    Matrix4x4 mdoelview_target1 = eye_view * model_target1_;
     modelview_projection_target_ = projection_matrix * modelview_target;
+    mdoelview_projection_target1_ = projection_matrix * mdoelview_target1;
     modelview_projection_room_ = projection_matrix * eye_view;
 
     // Draw room and target
@@ -593,11 +606,17 @@ void HelloCardboardApp::DrawTarget() {
   glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
                      target_array.data());
 
-  if (IsPointingAtTarget()) {
-    target_object_selected_textures_[cur_target_object_].Bind();
-  } else {
+//  if (IsPointingAtTarget()) {
+//    target_object_selected_textures_[cur_target_object_].Bind();
+//  } else {
     target_object_not_selected_textures_[cur_target_object_].Bind();
-  }
+//  }
+  target_object_meshes_[cur_target_object_].Draw();
+
+  std::array<float, 16> target_array1 = mdoelview_projection_target1_.ToGlArray();
+  glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
+                     target_array1.data());
+  target_object_not_selected_textures_[cur_target_object_].Bind();
   target_object_meshes_[cur_target_object_].Draw();
 
   CHECKGLERROR("DrawTarget");

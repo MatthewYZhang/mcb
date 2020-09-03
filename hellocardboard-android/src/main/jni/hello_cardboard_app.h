@@ -283,8 +283,10 @@ class HelloCardboardApp {
   Matrix4x4 rotated_head_view_;
   Matrix4x4 last_key_head_view_;
   Matrix4x4 model_target_;
+  Matrix4x4 model_target1_;
 
   Matrix4x4 modelview_projection_target_;
+  Matrix4x4 mdoelview_projection_target1_;
   Matrix4x4 modelview_projection_room_;
 
   TexturedMesh room_;

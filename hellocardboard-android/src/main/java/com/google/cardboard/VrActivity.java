@@ -216,7 +216,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       // direction > 0 means speed to right; else speed to left
       if (start) {
         try {
-          String data = direction + "," + nowAngle + "\n";
+          //log time, direction, cur angle
+          String data = System.currentTimeMillis() + "," + angleDiff + "," + nowAngle + "," + direction + "\n";
           logFile.write(data.getBytes());
         } catch(Exception e) {
           e.printStackTrace();
