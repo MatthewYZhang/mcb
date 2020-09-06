@@ -103,6 +103,10 @@ class HelloCardboardApp {
    */
   void SwitchPlan(int flg);
 
+  void SwitchSpeed(int idx);
+
+  void SwitchDir(int d);
+
   /**
    * Method for testing return a vector to jni
    * @return
@@ -246,7 +250,7 @@ class HelloCardboardApp {
   float bStep = 0.01f;
   float aSpeed = 0.5f;
   float bSpeed = 0.3f;
-  float aAngle = 50.f;
+  float aAngle = 30.f;
   float bAngle = 30.f;
 
   //the following members are used by Plan 3
@@ -264,10 +268,15 @@ class HelloCardboardApp {
   float direction = 0.0f;
 
   //TODO do test to set these three speed
-  float lowSpeed = 0.3f;
-  float midSpeed = 0.8f;
-  float highSpeed = 1.5f;
+//  float lowSpeed = 0.3f;
+//  float midSpeed = 0.8f;
+//  float highSpeed = 1.5f;
 
+  std::vector<float> speed = {22.0f, 45.0f, 70.0f};
+  const float MULTIPLER = 2.8f;
+  const float OFFSET = 0.3*PI;
+  float dir = 1.0f; //1 right, -1 left
+  int speed_idx_ = 0;
 
 
   GLuint depthRenderBuffer_;  // depth buffer

@@ -96,6 +96,16 @@ JNI_METHOD(void, nativeSwitchPlan)
   native(native_app)->SwitchPlan(flg);
 }
 
+JNI_METHOD(void, nativeSwitchSpeed)
+(JNIEnv* env, jobject obj, jlong native_app, jint flg) {
+    native(native_app)->SwitchSpeed(flg);
+}
+
+JNI_METHOD(void, nativeSwitchDir)
+(JNIEnv* env, jobject obj, jlong native_app, jfloat flg) {
+    native(native_app)->SwitchDir(flg);
+}
+
 JNI_METHOD(jfloatArray, nativeTestReturnVector)
 (JNIEnv* env, jobject obj, jlong native_app) {
     std::vector<float> temp = native(native_app)->ReturnVector();

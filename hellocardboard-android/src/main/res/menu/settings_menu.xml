@@ -8,6 +8,8 @@
         android:title="@string/change_parameters" />
     <item android:id="@+id/switch_plan"
         android:title="@string/switch_plan" />
-    <item android:id="@+id/change_target_speed"
-        android:title="@string/change_target_speed" />
+    <item android:id="@+id/switch_speed"
+        android:title="Switch Speed"/>
+    <item android:id="@+id/switch_dir"
+        android:title="Switch Dir"/>
 </menu>

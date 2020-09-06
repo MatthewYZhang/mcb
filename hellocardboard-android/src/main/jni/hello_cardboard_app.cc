@@ -163,17 +163,12 @@ void HelloCardboardApp::OnSurfaceCreated(JNIEnv* env) {
 
   // Target object first appears directly in front of user.
 
-  float angle = -M_PI/2 + 0.4*M_PI;
-  float distance = kMinTargetDistance;
+  float angle = -PI/2 + (speed[speed_idx_] / 180.0f * PI * MULTIPLER + OFFSET) * dir;
+  float distance = (kMinTargetDistance + kMaxTargetDistance) / 2;
   float height = 1.5f;
   std::array<float, 3> target_position = {std::cos(angle) * distance, height,
                                           std::sin(angle) * distance};
   model_target_ = GetTranslationMatrix(target_position);
-
-  angle = -M_PI/2 - 0.4*M_PI;
-  target_position = {std::cos(angle) * distance, height,
-                     std::sin(angle) * distance};
-  model_target1_ = GetTranslationMatrix(target_position);
 
   CHECKGLERROR("OnSurfaceCreated");
 }
@@ -201,37 +196,54 @@ void HelloCardboardApp::realizationA(float mainAngle) {
 
 //auto rotation
 void HelloCardboardApp::realizationB(float mainAngle) {
-  if (mainAngle > aAngle) {
-    flag = (aStep+flag) > 1 ? 1 : (aStep+flag);
-    theta -= flag * aSpeed;
-    //theta = std::max(-180.0f, theta);
+//  if (mainAngle > aAngle) {
+//    flag = (aStep+flag) > 1 ? 1 : (aStep+flag);
+//    theta -= flag * aSpeed;
+//    //theta = std::max(-180.0f, theta);
+//  }
+//  else if (mainAngle < -aAngle) {
+//    flag = (flag-aStep) < -1 ? -1 : (flag-aStep);
+//    theta -= flag * aSpeed;
+//    //theta = std::min(180.0f, theta);
+//  }
+//  else if (flag > 0) {
+//    if (mainAngle > bAngle) {
+//      theta -= flag * bSpeed;
+//      //theta = std::max(-180.0f, theta);
+//    }
+//    else {
+//      flag = (flag-bStep) > 0 ? (flag-bStep) : 0;
+//      theta -= flag * bSpeed;
+//    }
+//  }
+//  else if (flag < 0) {
+//    if (mainAngle < -bAngle) {
+//      theta -= flag * bSpeed;
+//      //theta = std::min(180.0f, theta);
+//    }
+//    else {
+//      flag = (flag+bStep) < 0 ? (flag+bStep) : 0;
+//      theta -= flag * bSpeed;
+//    }
+//  }
+
+//  float delta = 0;
+//  if(mainAngle > 10.0) {
+//    delta = 1.0f;
+//  } else if(mainAngle < -10.0) {
+//    delta = -1.0f;
+//  } else {
+//    delta = 0;
+//  }
+  if(mainAngle < -aAngle) {
+    theta -= speed[speed_idx_]/60.0f;
+  } else if(mainAngle > aAngle) {
+    theta += speed[speed_idx_]/60.0f;
   }
-  else if (mainAngle < -aAngle) {
-    flag = (flag-aStep) < -1 ? -1 : (flag-aStep);
-    theta -= flag * aSpeed;
-    //theta = std::min(180.0f, theta);
+  if(theta > 150 || theta < -150) {
+    rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
   }
-  else if (flag > 0) {
-    if (mainAngle > bAngle) {
-      theta -= flag * bSpeed;
-      //theta = std::max(-180.0f, theta);
-    }
-    else {
-      flag = (flag-bStep) > 0 ? (flag-bStep) : 0;
-      theta -= flag * bSpeed;
-    }
-  }
-  else if (flag < 0) {
-    if (mainAngle < -bAngle) {
-      theta -= flag * bSpeed;
-      //theta = std::min(180.0f, theta);
-    }
-    else {
-      flag = (flag+bStep) < 0 ? (flag+bStep) : 0;
-      theta -= flag * bSpeed;
-    }
-  }
-  rotateM(rotated_head_view_, theta, head_view_, 0, 1, 0);
+  else rotateM(rotated_head_view_, -theta, head_view_, 0, 1, 0);
 }
 
 
@@ -313,7 +325,6 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   }
 
 
-
   // Bind buffer
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
@@ -367,12 +378,12 @@ void HelloCardboardApp::OnTriggerEvent() {
     HideTarget();
   }
   else {
-    float* tmp = GetEulerAngle();
-    for (int i = 0; i < 3; ++i) {
-        iniAngle[i] = *(tmp + i);
-
-    }
-    maxAngle = 0.0f;
+//    float* tmp = GetEulerAngle();
+//    for (int i = 0; i < 3; ++i) {
+//        iniAngle[i] = *(tmp + i);
+//
+//    }
+//    maxAngle = 0.0f;
   }
 }
 
@@ -404,7 +415,34 @@ void HelloCardboardApp::SetParameter(float aSp, float bSp, float aAn, float bAn)
 }
 
 void HelloCardboardApp::SwitchPlan(int flg) {
+  if(flg == 5) {
+    PLAN = 0;
+//    rotated_head_view_ = head_view_;
+    theta = 0.0f;
+    rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
+    return;
+  }
   PLAN = flg;
+}
+
+void HelloCardboardApp::SwitchSpeed(int idx) {
+  speed_idx_ = idx;
+  float angle = -PI/2 + (speed[idx] / 180.0f * PI * MULTIPLER + OFFSET) * dir;
+  float distance = (kMinTargetDistance + kMaxTargetDistance) / 2;
+  float height = 1.5f;
+  std::array<float, 3> target_position = {std::cos(angle) * distance, height,
+                                          std::sin(angle) * distance};
+  model_target_ = GetTranslationMatrix(target_position);
+}
+
+void HelloCardboardApp::SwitchDir(int d) {
+  dir = d;
+  float angle = -PI/2 + (speed[speed_idx_] / 180.0f * PI * MULTIPLER + OFFSET) * dir;
+  float distance = (kMinTargetDistance + kMaxTargetDistance) / 2;
+  float height = 1.5f;
+  std::array<float, 3> target_position = {std::cos(angle) * distance, height,
+                                          std::sin(angle) * distance};
+  model_target_ = GetTranslationMatrix(target_position);
 }
 
 bool HelloCardboardApp::UpdateDeviceParams() {
@@ -606,18 +644,22 @@ void HelloCardboardApp::DrawTarget() {
   glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
                      target_array.data());
 
-//  if (IsPointingAtTarget()) {
-//    target_object_selected_textures_[cur_target_object_].Bind();
-//  } else {
+  if (IsPointingAtTarget()) {
+    target_object_selected_textures_[cur_target_object_].Bind();
+  } else {
     target_object_not_selected_textures_[cur_target_object_].Bind();
-//  }
+  }
   target_object_meshes_[cur_target_object_].Draw();
 
-  std::array<float, 16> target_array1 = mdoelview_projection_target1_.ToGlArray();
-  glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
-                     target_array1.data());
-  target_object_not_selected_textures_[cur_target_object_].Bind();
-  target_object_meshes_[cur_target_object_].Draw();
+//  std::array<float, 16> target_array1 = mdoelview_projection_target1_.ToGlArray();
+//  glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
+//                     target_array1.data());
+//  if(IsPointingAtTarget1()) {
+//    target_object_selected_textures_[cur_target_object_].Bind();
+//  } else {
+//      target_object_not_selected_textures_[cur_target_object_].Bind();
+//  }
+//  target_object_meshes_[cur_target_object_].Draw();
 
   CHECKGLERROR("DrawTarget");
 }

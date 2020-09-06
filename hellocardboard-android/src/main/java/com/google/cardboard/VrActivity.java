@@ -67,6 +67,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
 
   // Permission request codes
   private static final int PERMISSIONS_REQUEST_CODE = 2;
+  private static final float[] speed = {22.0f, 45.0f, 70.0f};
   float aSpeed = 0.0f;
   float bSpeed = 0.0f;
   float aAngle = 0.0f;
@@ -74,7 +75,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   float maxAngle = 0.0f;
   float angleDiff = 0.0f;
   float nowAngle = 0.0f;
-  float targetSpeed = 60.0f;
+  float targetSpeed = 45.0f;
   float direction = 0.0f;
 
   //Date date;
@@ -224,10 +225,10 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
         }
       }
       // todo: record logic here, when left button is pressed(for the first time), start == true
-      Log.e("nowAngle", nowAngle+"");
+//      Log.e("nowAngle", nowAngle+"");
       // show related numbers on screen
       if (counter == 0) {
-        t1.setText(angleDiff+"");
+        t1.setText(nowAngle+"");
         Log.e("angleDiff", angleDiff+"");
         Log.e("Direction", direction+"");
         Log.e("NowAngle", nowAngle+"");
@@ -251,6 +252,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     Button statusButton = (Button)findViewById(R.id.changeStatus);
     if(start == true) {
       statusButton.setText("S");
+      //switch to normal
+      nativeSwitchPlan(nativeApp, 5);
       try {
         logFile.close();
       } catch(Exception e) {
@@ -258,9 +261,12 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       }
     } else {
       statusButton.setText("E");
+      //switch to auto-rotation
+      nativeSwitchPlan(nativeApp, 2);
       try {
-        logFile = new FileOutputStream(path+"/log-" + System.currentTimeMillis() + ".txt");
-        String info = "hello world";
+        logFile = new FileOutputStream(path+"/log-" + targetSpeed + "-" + System.currentTimeMillis() + ".txt");
+        String info = Float.toString(targetSpeed) + "\n";
+        Log.v("Create file", "Create file");
         logFile.write(info.getBytes());
         logFile.flush();
       } catch (Exception e) {
@@ -314,7 +320,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
           String str_bAngle = edit_bAngle.getText().toString();
           aSpeed = Float.parseFloat(str_aSpeed); bSpeed = Float.parseFloat(str_bSpeed);
           aAngle = Float.parseFloat(str_aAngle); bAngle = Float.parseFloat(str_bAngle);
-          Log.e("log", aSpeed+","+bSpeed+","+aAngle+","+bAngle);
+//          Log.e("log", aSpeed+","+bSpeed+","+aAngle+","+bAngle);
           nativeSetParameter(nativeApp, aSpeed, bSpeed, aAngle, bAngle);
         }
       });
@@ -341,31 +347,63 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       builder.show();
       return true;
     }
-    else if (item.getItemId() == R.id.change_target_speed) {
-      LayoutInflater factory = LayoutInflater.from(this);
-      final View textEntryView = factory.inflate(R.layout.change_speed, null);
-      final EditText edit_target_speed = (EditText) textEntryView.findViewById(R.id.edit_target_speed);
-
+    else if (item.getItemId() == R.id.switch_speed) {
+      final String[] items = {"Low", "Middle", "High"};
       AlertDialog.Builder builder = new AlertDialog.Builder(this);
-      builder.setTitle("Change Target Speed");
+      builder.setTitle("Switch Speed");
       builder.setIcon(android.R.drawable.ic_dialog_info);
-      builder.setView(textEntryView);
-      builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+      builder.setItems(items, new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
-          String str_targetSpeed = edit_target_speed.getText().toString();
-          targetSpeed = Float.parseFloat(str_targetSpeed);
-
-        }
-      });
-      builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialogInterface, int i) {
+          Log.e("select speed", items[i]);
+          targetSpeed = speed[i];
+          nativeSwitchSpeed(nativeApp, i);
         }
       });
       builder.show();
       return true;
     }
+    else if (item.getItemId() == R.id.switch_dir) {
+      final String[] items = {"Left", "Right"};
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Switch Dir");
+      builder.setIcon(android.R.drawable.ic_dialog_info);
+      builder.setItems(items, new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+          Log.e("select dir", items[i]);
+          float dir = (i == 0) ? -1.0f : 1.0f;
+          nativeSwitchDir(nativeApp, dir);
+        }
+      });
+      builder.show();
+      return true;
+    }
+//    else if (item.getItemId() == R.id.change_target_speed) {
+//      LayoutInflater factory = LayoutInflater.from(this);
+//      final View textEntryView = factory.inflate(R.layout.change_speed, null);
+//      final EditText edit_target_speed = (EditText) textEntryView.findViewById(R.id.edit_target_speed);
+//
+//      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//      builder.setTitle("Change Target Speed");
+//      builder.setIcon(android.R.drawable.ic_dialog_info);
+//      builder.setView(textEntryView);
+//      builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+//        @Override
+//        public void onClick(DialogInterface dialogInterface, int i) {
+//          String str_targetSpeed = edit_target_speed.getText().toString();
+//          targetSpeed = Float.parseFloat(str_targetSpeed);
+//
+//        }
+//      });
+//      builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//        @Override
+//        public void onClick(DialogInterface dialogInterface, int i) {
+//        }
+//      });
+//      builder.show();
+//      return true;
+//    }
     return false;
   }
 
@@ -375,13 +413,17 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
    * @return whether the permissions are already granted.
    */
   private boolean arePermissionsEnabled() {
-    return ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-        == PackageManager.PERMISSION_GRANTED;
+    boolean writePermission =
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
+    boolean readPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            == PackageManager.PERMISSION_GRANTED;
+    return (writePermission && readPermission);
   }
 
   /** Handles the requests for activity permissions. */
   private void requestPermissions() {
-    final String[] permissions = new String[] {Manifest.permission.READ_EXTERNAL_STORAGE};
+    final String[] permissions = new String[] {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_REQUEST_CODE);
   }
 
@@ -441,6 +483,10 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   private native void nativeSetParameter(long nativeApp, float aSp, float bSp, float aAn, float bAn);
 
   private native void nativeSwitchPlan(long nativeApp, int p);
+
+  private native void nativeSwitchSpeed(long nativeApp, int p);
+
+  private native void nativeSwitchDir(long nativeApp, float d);
 
   private native float[] nativeTestReturnVector(long nativeApp);
 }
