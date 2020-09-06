@@ -240,7 +240,7 @@ void HelloCardboardApp::realizationB(float mainAngle) {
   } else if(mainAngle > aAngle) {
     theta += speed[speed_idx_]/60.0f;
   }
-  if(theta > 150 || theta < -150) {
+  if(theta > 200 || theta < -200) {
     rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
   }
   else rotateM(rotated_head_view_, -theta, head_view_, 0, 1, 0);
