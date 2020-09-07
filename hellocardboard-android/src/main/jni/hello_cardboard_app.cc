@@ -269,16 +269,26 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 }
 
+
+float HelloCardboardApp::realizationD() {
+    tamp = GetAmp(angleDiff);
+    viewAngle += tamp * angleDiff * direction / 60;
+    rotateM(rotated_head_view_, viewAngle - angle[1], head_view_, 0, 1, 0);
+    return tamp;
+}
+
+/*
 float HelloCardboardApp::realizationD() {
     tamp = GetAmp(angleDiff);
     float* tmp = GetEulerAngle();
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
-    if (tamp != amp4 || startTurningBack) {
+    if (tamp != amp4) {
         for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
         startTurningBack = false;
     }
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
+    /*
     if (isTurningBack) {
         viewAngle += tamp * angleDiff * direction;
         float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
@@ -286,12 +296,14 @@ float HelloCardboardApp::realizationD() {
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
-        viewAngle += tamp* angleDiff * direction;
+
+        //viewAngle += tamp* angleDiff * direction;
         float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
-    }
+    //}
     return tamp;
 }
+     */
 
 std::vector<float> HelloCardboardApp::ReturnVector() {
     std::vector<float> res;
@@ -302,6 +314,16 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     res.push_back(direction);
     res.push_back(viewAngle);
     res.push_back(tamp);
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            res.push_back(rotated_head_view_.m[i][j]);
+        }
+    }
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            res.push_back(head_view_.m[i][j]);
+        }
+    }
     return res;
 }
 
