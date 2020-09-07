@@ -271,13 +271,25 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 float HelloCardboardApp::realizationD() {
     float tamp = GetAmp(angleDiff);
-    if (tamp != amp4) {
-        float* tmp = GetEulerAngle();
+    float* tmp = GetEulerAngle();
+    //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
+    // 否则利用rotateM会转不动
+    if (tamp != amp4 || startTurningBack) {
         for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
+        startTurningBack = false;
     }
-    if (isTurningBack) {}
+    //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
+    if (isTurningBack) {
+//        tamp = viewAngle / angle[1];
+//        viewAngle += tamp * angleDiff * direction;
+//        float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
+//        rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
+    }
+    // 继续向更大角度转头，则使用tamp作为增益
     else {
-        rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
+        viewAngle += tamp* angleDiff * direction;
+        float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
+        rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
     }
     return tamp;
 }
@@ -289,18 +301,20 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     res.push_back(maxAngle);
     res.push_back(angle[1]);
     res.push_back(direction);
+    res.push_back(viewAngle);
     return res;
 }
 
-void HelloCardboardApp::judgeIfTurningBack() {
+bool HelloCardboardApp::judgeIfTurningBack() {
     if (direction > 0) {
         if (angle[1] < 0) isTurningBack = false;
         else isTurningBack = true;
     }
     else if (direction < 0) {
-        if (angle[1] > 0) isTurningBack = true;
-        else isTurningBack = false;
+        if (angle[1] > 0) isTurningBack = false;
+        else isTurningBack = true;
     }
+    return isTurningBack;
 }
 
 void HelloCardboardApp::OnDrawFrame(float _amp) {
@@ -335,8 +349,9 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   float mainAngle = angle[1];
   // direction > 0 means speed to right; else speed to left
   direction = lAngle - angle[1] > 0 ? 1 : -1;
-  angleDiff = std::abs(lAngle-angle[1]) * 180 / PI;
-  judgeIfTurningBack();
+  angleDiff = std::abs(lAngle-angle[1]);
+  bool tmpbool = isTurningBack;
+  if (tmpbool != judgeIfTurningBack()) {startTurningBack = true;}
 
   maxAngle = std::max(abs(maxAngle), abs(mainAngle));
   //Plan A: amplified head rotation, baseline

@@ -195,7 +195,7 @@ class HelloCardboardApp {
     /**
      *
      */
-    void judgeIfTurningBack();
+    bool judgeIfTurningBack();
 
   /**
    * Draws all world-space objects for the given eye.
@@ -251,7 +251,7 @@ class HelloCardboardApp {
   float abAngle[3];
 
   float rAngle[3];
-  int PLAN = 3;
+  int PLAN = 4;
   // the following members are used by Plan 2
   float flag = 0.0f;
   float theta = 0.0f;
@@ -289,6 +289,10 @@ class HelloCardboardApp {
   int speed_idx_ = 0;
 
   bool isTurningBack = false;
+  bool startTurningBack = false;
+  /**
+   * 这个viewAngle变量记录了当前画面相对于粉色墙旋转了多少度，现在还无法正确工作
+   */
   float viewAngle = 0.0f;
   float amp4 = 1.0f;
   float lastKeyAngles[3];

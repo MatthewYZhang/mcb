@@ -77,6 +77,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   float nowAngle = 0.0f;
   float targetSpeed = 45.0f;
   float direction = 0.0f;
+  float viewAngle = 0.0f;
 
   //Date date;
   int counter = 0;
@@ -212,7 +213,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
 
       float[] tmp = nativeTestReturnVector(nativeApp);
       // use the following results
-      angleDiff = tmp[1]; maxAngle = tmp[2]; nowAngle = tmp[3]; direction = tmp[4];
+      angleDiff = tmp[1]; maxAngle = tmp[2]; nowAngle = tmp[3]; direction = tmp[4]; viewAngle = tmp[5];
       // use System.currentTimeMillis() to read time
       // direction > 0 means speed to right; else speed to left
       if (start) {
@@ -239,7 +240,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       else {
         counter++; if (counter == refreshRate) counter = 0;
       }
-      t2.setText(amp+"");
+      t2.setText(viewAngle+"");
     }
   }
 
