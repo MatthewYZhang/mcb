@@ -294,6 +294,7 @@ class HelloCardboardApp {
    * 这个viewAngle变量记录了当前画面相对于粉色墙旋转了多少度，现在还无法正确工作
    */
   float viewAngle = 0.0f;
+  float tamp;
   float amp4 = 1.0f;
   float lastKeyAngles[3];
 

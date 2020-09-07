@@ -270,7 +270,7 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 }
 
 float HelloCardboardApp::realizationD() {
-    float tamp = GetAmp(angleDiff);
+    tamp = GetAmp(angleDiff);
     float* tmp = GetEulerAngle();
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
@@ -280,10 +280,9 @@ float HelloCardboardApp::realizationD() {
     }
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
     if (isTurningBack) {
-//        tamp = viewAngle / angle[1];
-//        viewAngle += tamp * angleDiff * direction;
-//        float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
-//        rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
+        viewAngle += tamp * angleDiff * direction;
+        float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
+        rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
@@ -302,6 +301,7 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     res.push_back(angle[1]);
     res.push_back(direction);
     res.push_back(viewAngle);
+    res.push_back(tamp);
     return res;
 }
 
@@ -349,9 +349,9 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   float mainAngle = angle[1];
   // direction > 0 means speed to right; else speed to left
   direction = lAngle - angle[1] > 0 ? 1 : -1;
-  angleDiff = std::abs(lAngle-angle[1]);
+  angleDiff = std::abs(lAngle-angle[1]) * 60;
   bool tmpbool = isTurningBack;
-  if (tmpbool != judgeIfTurningBack()) {startTurningBack = true;}
+  if (tmpbool != judgeIfTurningBack()) {startTurningBack = true; tamp = viewAngle / angle[1]; }
 
   maxAngle = std::max(abs(maxAngle), abs(mainAngle));
   //Plan A: amplified head rotation, baseline
