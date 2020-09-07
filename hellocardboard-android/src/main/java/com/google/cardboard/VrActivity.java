@@ -278,11 +278,12 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   }
 
   public void raiseAmp(View view) {
-    amp += 0.05f;
+    amp += 0.15f;
   }
 
   public void lowerAmp(View view) {
-    amp -= 0.05f; if (amp < 1) amp = 1;
+    amp -= 0.05f;
+    //if (amp < 1) amp = 1;
   }
 
   /** Callback for when settings_menu button is pressed. */

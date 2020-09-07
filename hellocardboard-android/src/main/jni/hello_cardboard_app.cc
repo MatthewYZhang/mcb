@@ -179,6 +179,18 @@ void HelloCardboardApp::SetScreenParams(int width, int height) {
   screen_params_changed_ = true;
 }
 
+float HelloCardboardApp::GetAmp(float speed) {
+    if(0 <= speed && speed < 22) {
+        return 2.9;
+    } else if(speed < 45) {
+        return 2.5 + (45 - speed) / (45 - 22) * (2.9 - 2.5);
+    } else if(speed < 70) {
+        return 2.0 + (70 - speed) / (70 - 45) * (2.5 - 2.0);
+    } else {
+        return 2.0;
+    }
+}
+
 
 //normal VR
 void HelloCardboardApp::realization0(float mainAngle) {
@@ -257,6 +269,19 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 }
 
+float HelloCardboardApp::realizationD() {
+    float tamp = GetAmp(angleDiff);
+    if (tamp != amp4) {
+        float* tmp = GetEulerAngle();
+        for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
+    }
+    if (isTurningBack) {}
+    else {
+        rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
+    }
+    return tamp;
+}
+
 std::vector<float> HelloCardboardApp::ReturnVector() {
     std::vector<float> res;
     res.push_back(amp);
@@ -267,19 +292,25 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     return res;
 }
 
+void HelloCardboardApp::judgeIfTurningBack() {
+    if (direction > 0) {
+        if (angle[1] < 0) isTurningBack = false;
+        else isTurningBack = true;
+    }
+    else if (direction < 0) {
+        if (angle[1] > 0) isTurningBack = true;
+        else isTurningBack = false;
+    }
+}
 
-//TODO: return an array ?
 void HelloCardboardApp::OnDrawFrame(float _amp) {
   if (!UpdateDeviceParams()) {
     return;
   }
 
   lAngle = angle[1];
-
   // Update Head Pose.
   head_view_ = GetPose();
-
-
   // We have to get angles first
   float* eulerAngle = GetEulerAngle();
   // if iniAngle is not initialized, press button to initialize it
@@ -292,26 +323,25 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   for (int i = 0; i < 3; ++i) {
     angle[i] = *(eulerAngle+i);
 
-    if (PLAN == 1 || PLAN == 2) angle[i] = (angle[i]-iniAngle[i]) * 180 / PI;
+    if (PLAN == 1 || PLAN == 2 || PLAN == 4) angle[i] = (angle[i]-iniAngle[i]) * 180 / PI;
     else if (PLAN == 3 || PLAN == 0) angle[i] = (angle[i]-abAngle[i]) * 180 / PI;
   }
   amp = _amp;
-
-
 
   // Incorporate the floor height into the head_view
   head_view_ =
       head_view_ * GetTranslationMatrix({0.0f, kDefaultFloorHeight, 0.0f});
 
-
-  //TODO: make head_view_ rotated
   float mainAngle = angle[1];
+  // direction > 0 means speed to right; else speed to left
+  direction = lAngle - angle[1] > 0 ? 1 : -1;
+  angleDiff = std::abs(lAngle-angle[1]) * 180 / PI;
+  judgeIfTurningBack();
 
   maxAngle = std::max(abs(maxAngle), abs(mainAngle));
   //Plan A: amplified head rotation, baseline
   // we need to setup parameters including the amplified function
   //
-
   //Plan B: use head rotation angle to control whether to rotate the scene
   // we need to setup parameters including alpha, beta, aSpeed, bSpeed
   // maybe we can change aSpeed and/or bSpeed into a function()
@@ -323,8 +353,9 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     //if (abAngle[1] * lAngleUse < 0) lAngleUse = abAngle[1]; // we must do this, or there will be violent shift in scene
     realizationC(angle[1]); // we only need the real head angles (and last angle) to do this
   }
-
-
+  else if (PLAN == 4) {
+      amp4 = realizationD();
+  }
   // Bind buffer
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
@@ -365,8 +396,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   CHECKGLERROR("onDrawFrame");
   //return maxAngle;
   //return theta;
-  direction = lAngle - angle[1] > 0 ? 1 : -1;
-  angleDiff = std::abs(lAngle-angle[1]) * 180 / PI;
+
   return;
   //return amp;
 }
@@ -415,13 +445,7 @@ void HelloCardboardApp::SetParameter(float aSp, float bSp, float aAn, float bAn)
 }
 
 void HelloCardboardApp::SwitchPlan(int flg) {
-  if(flg == 5) {
-    PLAN = 0;
-//    rotated_head_view_ = head_view_;
-    theta = 0.0f;
-    rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
-    return;
-  }
+
   PLAN = flg;
 }
 

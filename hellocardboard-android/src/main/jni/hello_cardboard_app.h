@@ -188,10 +188,14 @@ class HelloCardboardApp {
     void realizationC(float mainAngle);
     /**
      *
-     * @param mainAngle
+     *
      *
      */
-    void realizationD(float mainAngle);
+    float realizationD();
+    /**
+     *
+     */
+    void judgeIfTurningBack();
 
   /**
    * Draws all world-space objects for the given eye.
@@ -284,6 +288,10 @@ class HelloCardboardApp {
   float dir = 1.0f; //1 right, -1 left
   int speed_idx_ = 0;
 
+  bool isTurningBack = false;
+  float viewAngle = 0.0f;
+  float amp4 = 1.0f;
+  float lastKeyAngles[3];
 
   GLuint depthRenderBuffer_;  // depth buffer
   GLuint framebuffer_;        // framebuffer object
@@ -311,7 +319,9 @@ class HelloCardboardApp {
   std::vector<Texture> target_object_not_selected_textures_;
   std::vector<Texture> target_object_selected_textures_;
   int cur_target_object_;
-};
+
+        float GetAmp(float speed);
+    };
 
 }  // namespace ndk_hello_cardboard
 
