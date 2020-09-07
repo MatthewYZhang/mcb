@@ -186,6 +186,12 @@ class HelloCardboardApp {
    * amplifies head rotation degrees using a non-linear function
    */
     void realizationC(float mainAngle);
+    /**
+     *
+     * @param mainAngle
+     *
+     */
+    void realizationD(float mainAngle);
 
   /**
    * Draws all world-space objects for the given eye.
@@ -241,7 +247,7 @@ class HelloCardboardApp {
   float abAngle[3];
 
   float rAngle[3];
-  int PLAN = 0;
+  int PLAN = 3;
   // the following members are used by Plan 2
   float flag = 0.0f;
   float theta = 0.0f;
@@ -267,7 +273,7 @@ class HelloCardboardApp {
   // if direction < 0: acceleration to left; else acceleration to right
   float direction = 0.0f;
 
-  //TODO do test to set these three speed
+  //
 //  float lowSpeed = 0.3f;
 //  float midSpeed = 0.8f;
 //  float highSpeed = 1.5f;

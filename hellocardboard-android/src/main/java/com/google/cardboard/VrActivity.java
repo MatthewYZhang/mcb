@@ -80,7 +80,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
 
   //Date date;
   int counter = 0;
-  int refreshRate = 10;
+  int refreshRate = 4;
   float amp = 1.0f;
 
   //Control variables for logging
@@ -207,7 +207,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     public void onDrawFrame(GL10 gl10) {
       TextView t1 = (TextView) findViewById(R.id.txtOne);
       TextView t2 = (TextView) findViewById(R.id.txtTwo);
-      ProgressBar p1 = (ProgressBar) findViewById(R.id.progress_bar1);
+      //ProgressBar p1 = (ProgressBar) findViewById(R.id.progress_bar1);
       nativeOnDrawFrame(nativeApp, amp);
 
       float[] tmp = nativeTestReturnVector(nativeApp);
@@ -232,7 +232,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
         Log.e("angleDiff", angleDiff+"");
         Log.e("Direction", direction+"");
         Log.e("NowAngle", nowAngle+"");
-        p1.setProgress((int)(angleDiff/(2*targetSpeed)*100));
+        //p1.setProgress((int)(angleDiff/(2*targetSpeed)*100));
+
         counter++;
       }
       else {
@@ -333,7 +334,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
       return true;
     }
     else if (item.getItemId() == R.id.switch_plan) {
-      final String[] items = {"Plan 0", "Plan 1", "Plan 2", "Plan 3"};
+      final String[] items = {"Plan 0", "Plan 1", "Plan 2", "Plan 3", "Plan 4"};
       AlertDialog.Builder builder = new AlertDialog.Builder(this);
       builder.setTitle("Switch Plans");
       builder.setIcon(android.R.drawable.ic_dialog_info);
