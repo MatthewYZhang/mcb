@@ -102,7 +102,7 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_
 
   Cardboard_initializeAndroid(vm, obj);
   head_tracker_ = CardboardHeadTracker_create();
-  float* eulerAngle = GetEulerAngle();
+  float* eulerAngle = GetEulerAngle(head_view_);
   for (int i = 0; i < 3; ++i) {
     iniAngle[i] = *(eulerAngle+i);
     abAngle[i] = iniAngle[i];
@@ -269,28 +269,29 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 }
 
-
+/*
 float HelloCardboardApp::realizationD() {
-    tamp = GetAmp(angleDiff);
+    tamp = GetAmp(angleDiff); if (isnan(tamp)) tamp = 2.9;
     viewAngle += tamp * angleDiff * direction / 60;
     rotateM(rotated_head_view_, viewAngle - angle[1], head_view_, 0, 1, 0);
     return tamp;
 }
+ */
 
-/*
+
 float HelloCardboardApp::realizationD() {
     tamp = GetAmp(angleDiff);
-    float* tmp = GetEulerAngle();
+
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
     if (tamp != amp4) {
+        float* tmp = GetEulerAngle(head_view_);
         for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
         startTurningBack = false;
     }
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
-    /*
     if (isTurningBack) {
-        viewAngle += tamp * angleDiff * direction;
+        //viewAngle += tamp * angleDiff * direction;
         float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
     }
@@ -300,10 +301,9 @@ float HelloCardboardApp::realizationD() {
         //viewAngle += tamp* angleDiff * direction;
         float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
-    //}
+    }
     return tamp;
 }
-     */
 
 std::vector<float> HelloCardboardApp::ReturnVector() {
     std::vector<float> res;
@@ -348,7 +348,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   // Update Head Pose.
   head_view_ = GetPose();
   // We have to get angles first
-  float* eulerAngle = GetEulerAngle();
+  float* eulerAngle = GetEulerAngle(head_view_);
   // if iniAngle is not initialized, press button to initialize it
   if (amp != _amp && PLAN == 3) {
     firstIn = true;
@@ -371,9 +371,15 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   float mainAngle = angle[1];
   // direction > 0 means speed to right; else speed to left
   direction = lAngle - angle[1] > 0 ? 1 : -1;
-  angleDiff = std::abs(lAngle-angle[1]) * 60;
+  angleDiff = std::abs(lAngle-angle[1]) * 60; if (isnan(angleDiff)) angleDiff = 0;
   bool tmpbool = isTurningBack;
   if (tmpbool != judgeIfTurningBack()) {startTurningBack = true; tamp = viewAngle / angle[1]; }
+
+
+
+
+
+
 
   maxAngle = std::max(abs(maxAngle), abs(mainAngle));
   //Plan A: amplified head rotation, baseline
@@ -393,6 +399,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   else if (PLAN == 4) {
       amp4 = realizationD();
   }
+  viewAngle = *(GetEulerAngle(rotated_head_view_) + 1) * 180 / PI;
   // Bind buffer
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
@@ -482,7 +489,6 @@ void HelloCardboardApp::SetParameter(float aSp, float bSp, float aAn, float bAn)
 }
 
 void HelloCardboardApp::SwitchPlan(int flg) {
-
   PLAN = flg;
 }
 
@@ -635,16 +641,16 @@ Matrix4x4 HelloCardboardApp::GetPose() {
          Quatf::FromXYZW(&out_orientation[0]).ToMatrix();
 }
 
-float *HelloCardboardApp::GetEulerAngle() {
+float *HelloCardboardApp::GetEulerAngle(Matrix4x4 mat) {
   static float var[3];
-  var[0] = -(float)asin((double)head_view_.m[1][2]);
-  if (sqrt((double)(1.0F - head_view_.m[1][2] * head_view_.m[1][2])) >= 0.009999999776482582) {
-    var[1] = -(float)atan2((double)(-head_view_.m[0][2]), (double)head_view_.m[2][2]);
-    var[2] = -(float)atan2((double)(-head_view_.m[1][0]), (double)head_view_.m[1][1]);
+  var[0] = -(float)asin((double)mat.m[1][2]);
+  if (sqrt((double)(1.0F - mat.m[1][2] * mat.m[1][2])) >= 0.009999999776482582) {
+    var[1] = -(float)atan2((double)(-mat.m[0][2]), (double)mat.m[2][2]);
+    var[2] = -(float)atan2((double)(-mat.m[1][0]), (double)mat.m[1][1]);
   }
   else {
     var[1] = 0.0F;
-    var[2] = -atan2(head_view_.m[0][1], head_view_.m[0][0]);
+    var[2] = -atan2(mat.m[0][1], mat.m[0][0]);
 
   }
   return var;

@@ -243,7 +243,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             }
             // todo: record logic here, when left button is pressed(for the first time), start == true
             Log.e("tamp", tamp+"");
-            t2.setText(tamp+"");
+            t1.setText(viewAngle+"");
+            t2.setText(nowAngle+"");
             // show related numbers on screen
             if (counter == 0) {
 //                t1.setText(angleDiff+"");

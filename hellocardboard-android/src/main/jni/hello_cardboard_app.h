@@ -153,7 +153,7 @@ class HelloCardboardApp {
    *
    * @return a float*
    */
-  float* GetEulerAngle();
+  float* GetEulerAngle(Matrix4x4);
 
   /**
     * rotate src matrix around axis(x,y,z) by angle(in degrees)
