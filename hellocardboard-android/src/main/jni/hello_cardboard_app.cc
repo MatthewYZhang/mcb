@@ -291,15 +291,13 @@ float HelloCardboardApp::realizationD() {
     }
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
     if (isTurningBack) {
-        //viewAngle += tamp * angleDiff * direction;
-        float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
+        tamp = viewAngle / angle[1];
+        float mainAngle = -(angle[1] - lastKeyAngles[1]) * (tamp-1);
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
-
-        //viewAngle += tamp* angleDiff * direction;
-        float mainAngle = -(angle[1] - lastKeyAngles[1]) * tamp;
+        float mainAngle = -(angle[1] - lastKeyAngles[1]) * (tamp-1);
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
     }
     return tamp;
