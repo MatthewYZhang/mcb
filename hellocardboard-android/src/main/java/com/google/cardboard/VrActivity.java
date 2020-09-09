@@ -217,8 +217,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             float[] tmp = nativeTestReturnVector(nativeApp);
             // use the following results
             angleDiff = tmp[1]; maxAngle = tmp[2]; nowAngle = tmp[3]; direction = tmp[4]; viewAngle = tmp[5]; tamp = tmp[6];
-            for (int i = 7; i < 23; ++i) rotated[i-7] = tmp[i];
-            for (int i = 23; i < 39; ++i) origin[i-23] = tmp[i];
+//            for (int i = 7; i < 23; ++i) rotated[i-7] = tmp[i];
+//            for (int i = 23; i < 39; ++i) origin[i-23] = tmp[i];
             /*
             Log.e("rotated", rotated[0] + " " +rotated[1] + " " + rotated[2] + " " + rotated[3] + " " +
                             rotated[4] + " " + rotated[5] + " " + rotated[6] + " " + rotated[7] + " " +
@@ -242,13 +242,19 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
                 }
             }
             // todo: record logic here, when left button is pressed(for the first time), start == true
-            Log.e("tamp", tamp+"");
+//            Log.e("tamp", tamp+"");
             t1.setText(viewAngle+"");
-            t2.setText(nowAngle+"");
+            t2.setText(tamp+"");
+            String s = "";
+            for(int i = 8; i < tmp.length; i++) {
+                s += " " + tmp[i];
+            }
+            float rotateAngle = tmp[8];
+            Log.e("angleDiff", angleDiff+" "+direction+" "+nowAngle+" "+tamp+" "+tmp[7]+" "+viewAngle+" "+rotateAngle+" "+s);
             // show related numbers on screen
             if (counter == 0) {
 //                t1.setText(angleDiff+"");
-//                Log.e("angleDiff", angleDiff+"");
+
 //                Log.e("Direction", direction+"");
 //                Log.e("NowAngle", nowAngle+"");
 //                //p1.setProgress((int)(angleDiff/(2*targetSpeed)*100));

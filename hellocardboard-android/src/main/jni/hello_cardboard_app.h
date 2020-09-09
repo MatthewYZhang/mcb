@@ -24,6 +24,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <queue>
+#include <deque>
 
 #include <GLES2/gl2.h>
 #include "cardboard.h"
@@ -38,6 +40,34 @@ namespace ndk_hello_cardboard {
  * objects that you can click on.
  */
 
+struct BufferQueue {
+    const static int MAX_LEN = 5;
+    std::deque<float> q;
+    void insert(float val) {
+      if(q.size() >= MAX_LEN) {
+        q.pop_front();
+        q.push_back(val);
+      } else {
+        q.push_back(val);
+      }
+    }
+    int direction_() {
+
+      if(q.size() < MAX_LEN) return 0;
+      if(std::abs(q.front() - q.back()) < 1.5) return 0; //still
+      if(q.back() - q.front() > 1.5) return -1; //rotate left
+      else if(q.front() - q.back() > 1.5) return 1; //rotate right
+      return 1;
+
+//      if(q.back() - q.front() > 10) return -1; //rotate left
+//      else if(q.front() - q.back() > 10) return 1; //rotate right
+    }
+    bool isTurningBack() {
+      if(q.size() == 0) return false;
+
+      return false;
+    }
+};
 
 class HelloCardboardApp {
  public:
@@ -281,6 +311,8 @@ class HelloCardboardApp {
 //  float lowSpeed = 0.3f;
 //  float midSpeed = 0.8f;
 //  float highSpeed = 1.5f;
+  BufferQueue bqueue_;
+  float rotated_angle_ = 0.0f;
 
   std::vector<float> speed = {22.0f, 45.0f, 70.0f};
   const float MULTIPLER = 2.8f;

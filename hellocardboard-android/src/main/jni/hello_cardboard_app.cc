@@ -180,14 +180,15 @@ void HelloCardboardApp::SetScreenParams(int width, int height) {
 }
 
 float HelloCardboardApp::GetAmp(float speed) {
+    speed = std::abs(speed);
     if(0 <= speed && speed < 22) {
-        return 2.9;
-    } else if(speed < 45) {
-        return 2.5 + (45 - speed) / (45 - 22) * (2.9 - 2.5);
-    } else if(speed < 70) {
-        return 2.0 + (70 - speed) / (70 - 45) * (2.5 - 2.0);
+        return 2.95;
+    } else if(speed < 48.3) {
+        return 2.55 + (48.3 - speed) / (48.3 - 22) * (2.95 - 2.55);
+    } else if(speed < 74.6) {
+        return 2.22 + (74.6 - speed) / (74.6 - 48.3) * (2.55 - 2.22);
     } else {
-        return 2.0;
+        return 2.22;
     }
 }
 
@@ -284,21 +285,28 @@ float HelloCardboardApp::realizationD() {
 
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
-    if (tamp != amp4) {
+//    if (tamp != amp4) {
         float* tmp = GetEulerAngle(head_view_);
         for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
         startTurningBack = false;
-    }
+//    }
+
+//    if(bqueue_.direction_() == 0) {
+//        rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
+//        return 1.0;
+//    }
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
     if (isTurningBack) {
         tamp = viewAngle / angle[1];
         float mainAngle = -(angle[1] - lastKeyAngles[1]) * (tamp-1);
+        rotated_angle_ = mainAngle;
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
         float mainAngle = -(angle[1] - lastKeyAngles[1]) * (tamp-1);
         rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
+        rotated_angle_ = mainAngle;
     }
     return tamp;
 }
@@ -312,21 +320,28 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     res.push_back(direction);
     res.push_back(viewAngle);
     res.push_back(tamp);
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            res.push_back(rotated_head_view_.m[i][j]);
-        }
+    if(isTurningBack) res.push_back(1);
+    else res.push_back(0);
+    res.push_back(rotated_angle_);
+    for(int i = 0; i < bqueue_.q.size(); i++) {
+        res.push_back(bqueue_.q[i]);
     }
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            res.push_back(head_view_.m[i][j]);
-        }
-    }
+//    for (int i = 0; i < 4; ++i) {
+//        for (int j = 0; j < 4; ++j) {
+//            res.push_back(rotated_head_view_.m[i][j]);
+//        }
+//    }
+//    for (int i = 0; i < 4; ++i) {
+//        for (int j = 0; j < 4; ++j) {
+//            res.push_back(head_view_.m[i][j]);
+//        }
+//    }
     return res;
 }
 
 bool HelloCardboardApp::judgeIfTurningBack() {
-    if (direction > 0) {
+    if(direction == 0) isTurningBack = false;
+    else if (direction > 0) {
         if (angle[1] < 0) isTurningBack = false;
         else isTurningBack = true;
     }
@@ -342,6 +357,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     return;
   }
 
+  bqueue_.insert(angle[1]);
   lAngle = angle[1];
   // Update Head Pose.
   head_view_ = GetPose();
@@ -368,7 +384,9 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
 
   float mainAngle = angle[1];
   // direction > 0 means speed to right; else speed to left
-  direction = lAngle - angle[1] > 0 ? 1 : -1;
+//  direction = lAngle - angle[1] > 0 ? 1 : -1;
+  direction = bqueue_.direction_();
+
   angleDiff = std::abs(lAngle-angle[1]) * 60; if (isnan(angleDiff)) angleDiff = 0;
   bool tmpbool = isTurningBack;
   if (tmpbool != judgeIfTurningBack()) {startTurningBack = true; tamp = viewAngle / angle[1]; }
