@@ -62,6 +62,16 @@ struct BufferQueue {
 //      if(q.back() - q.front() > 10) return -1; //rotate left
 //      else if(q.front() - q.back() > 10) return 1; //rotate right
     }
+    float speed_() {
+      if(q.size() < MAX_LEN) return 0.0f;
+      return (q.back() - q.front()) / q.size() * 60;
+    }
+    float last_() {
+      if (q.size() >= 1) {
+        return q.back();
+      }
+      return 0.0;
+    }
     bool isTurningBack() {
       if(q.size() == 0) return false;
 
@@ -307,12 +317,11 @@ class HelloCardboardApp {
   // if direction < 0: acceleration to left; else acceleration to right
   float direction = 0.0f;
 
-  //
-//  float lowSpeed = 0.3f;
-//  float midSpeed = 0.8f;
-//  float highSpeed = 1.5f;
   BufferQueue bqueue_;
-  float rotated_angle_ = 0.0f;
+  float rotated_angle_;
+  float out_;
+  bool first_rotate_;
+  int cnt_;
 
   std::vector<float> speed = {22.0f, 45.0f, 70.0f};
   const float MULTIPLER = 2.8f;
@@ -346,7 +355,6 @@ class HelloCardboardApp {
   Matrix4x4 model_target1_;
 
   Matrix4x4 modelview_projection_target_;
-  Matrix4x4 mdoelview_projection_target1_;
   Matrix4x4 modelview_projection_room_;
 
   TexturedMesh room_;
@@ -357,9 +365,8 @@ class HelloCardboardApp {
   std::vector<Texture> target_object_selected_textures_;
   int cur_target_object_;
 
-        float GetAmp(float speed);
-    };
-
+  float GetAmp(float speed);
+};
 }  // namespace ndk_hello_cardboard
 
 #endif  // HELLO_CARDBOARD_ANDROID_SRC_MAIN_JNI_HELLO_CARDBOARD_APP_H_

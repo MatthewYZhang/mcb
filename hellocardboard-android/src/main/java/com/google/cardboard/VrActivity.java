@@ -217,9 +217,9 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             float[] tmp = nativeTestReturnVector(nativeApp);
             // use the following results
             angleDiff = tmp[1]; maxAngle = tmp[2]; nowAngle = tmp[3]; direction = tmp[4]; viewAngle = tmp[5]; tamp = tmp[6];
-//            for (int i = 7; i < 23; ++i) rotated[i-7] = tmp[i];
-//            for (int i = 23; i < 39; ++i) origin[i-23] = tmp[i];
-            /*
+            for (int i = 8; i < 24; ++i) rotated[i-8] = tmp[i];
+            for (int i = 24; i < 39; ++i) origin[i-23] = tmp[i];
+
             Log.e("rotated", rotated[0] + " " +rotated[1] + " " + rotated[2] + " " + rotated[3] + " " +
                             rotated[4] + " " + rotated[5] + " " + rotated[6] + " " + rotated[7] + " " +
                             rotated[8] + " " + rotated[9] + " " + rotated[10] + " " + rotated[11] + " " +
@@ -229,7 +229,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
                     origin[8] + " " + origin[9] + " " + origin[10] + " " + origin[11] + " " +
                     origin[12] + " " + origin[13] + " " + origin[14] + " " + origin[15] + " ");
 
-             */
+
                     // use System.currentTimeMillis() to read time
                     // direction > 0 means speed to right; else speed to left
             if (start) {
@@ -246,11 +246,12 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             t1.setText(viewAngle+"");
             t2.setText(tamp+"");
             String s = "";
-            for(int i = 8; i < tmp.length; i++) {
+            for(int i = 9; i < tmp.length; i++) {
                 s += " " + tmp[i];
             }
+            float turningBack = tmp[7];
             float rotateAngle = tmp[8];
-            Log.e("angleDiff", angleDiff+" "+direction+" "+nowAngle+" "+tamp+" "+tmp[7]+" "+viewAngle+" "+rotateAngle+" "+s);
+            Log.e("angleDiff", angleDiff+" "+direction+" "+nowAngle+" "+tamp+" "+turningBack+" "+viewAngle+" "+rotateAngle+" "+s);
             // show related numbers on screen
             if (counter == 0) {
 //                t1.setText(angleDiff+"");

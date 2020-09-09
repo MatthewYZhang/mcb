@@ -109,7 +109,11 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_
   }
   //lAngle = *(eulerAngle+1);
   firstIn = true;
-
+  rotated_angle_ = 0.0f;
+  head_view_ = GetPose();
+  first_rotate_ = true;
+  out_ = 0.0;
+  cnt_ = 0;
 }
 
 HelloCardboardApp::~HelloCardboardApp() {
@@ -270,25 +274,19 @@ void HelloCardboardApp::realizationC(float mainAngle) {
 
 }
 
-/*
 float HelloCardboardApp::realizationD() {
-    tamp = GetAmp(angleDiff); if (isnan(tamp)) tamp = 2.9;
-    viewAngle += tamp * angleDiff * direction / 60;
-    rotateM(rotated_head_view_, viewAngle - angle[1], head_view_, 0, 1, 0);
-    return tamp;
-}
- */
+    tamp = GetAmp(bqueue_.speed_());
 
-
-float HelloCardboardApp::realizationD() {
-    tamp = GetAmp(angleDiff);
-
+    if(cnt_ < 5) {
+        cnt_++;
+        rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
+    }
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
 //    if (tamp != amp4) {
-        float* tmp = GetEulerAngle(head_view_);
-        for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
-        startTurningBack = false;
+    float* tmp = GetEulerAngle(head_view_);
+    for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
+    startTurningBack = false;
 //    }
 
 //    if(bqueue_.direction_() == 0) {
@@ -298,15 +296,26 @@ float HelloCardboardApp::realizationD() {
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
     if (isTurningBack) {
         tamp = viewAngle / angle[1];
-        float mainAngle = -(angle[1] - lastKeyAngles[1]) * (tamp-1);
-        rotated_angle_ = mainAngle;
-        rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
+        float mainAngle = -(angle[1] - bqueue_.last_()) * tamp;
+//        if(std::abs(mainAngle) > 20) {
+//            mainAngle = (mainAngle > 0) ? 5 : -5;
+//        }
+        rotateM(rotated_head_view_, mainAngle, rotated_head_view_, 0, 1, 0);
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
-        float mainAngle = -(angle[1] - lastKeyAngles[1]) * (tamp-1);
-        rotateM(rotated_head_view_, mainAngle, head_view_, 0, 1, 0);
+        float mainAngle = -(angle[1] - bqueue_.last_()) * tamp;
         rotated_angle_ = mainAngle;
+        float cur_virtual = *(GetEulerAngle(rotated_head_view_)+1);
+        if(std::abs(cur_virtual * 180 / PI) + std::abs(rotated_angle_) >= 175.0) {
+            if(cur_virtual > 0) {
+                rotateM(rotated_head_view_, -(170.0 - cur_virtual * 180 / PI), rotated_head_view_, 0, 1, 0);
+            } else {
+                rotateM(rotated_head_view_, (170.0 + cur_virtual * 180 / PI), rotated_head_view_, 0, 1, 0);
+            }
+        } else {
+            rotateM(rotated_head_view_, mainAngle, rotated_head_view_, 0, 1, 0);
+        }
     }
     return tamp;
 }
@@ -322,20 +331,20 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     res.push_back(tamp);
     if(isTurningBack) res.push_back(1);
     else res.push_back(0);
-    res.push_back(rotated_angle_);
-    for(int i = 0; i < bqueue_.q.size(); i++) {
-        res.push_back(bqueue_.q[i]);
+//    res.push_back(rotated_angle_);
+//    for(int i = 0; i < bqueue_.q.size(); i++) {
+//        res.push_back(bqueue_.q[i]);
+//    }
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            res.push_back(rotated_head_view_.m[i][j]);
+        }
     }
-//    for (int i = 0; i < 4; ++i) {
-//        for (int j = 0; j < 4; ++j) {
-//            res.push_back(rotated_head_view_.m[i][j]);
-//        }
-//    }
-//    for (int i = 0; i < 4; ++i) {
-//        for (int j = 0; j < 4; ++j) {
-//            res.push_back(head_view_.m[i][j]);
-//        }
-//    }
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            res.push_back(head_view_.m[i][j]);
+        }
+    }
     return res;
 }
 
@@ -361,6 +370,14 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   lAngle = angle[1];
   // Update Head Pose.
   head_view_ = GetPose();
+//  if(first_rotate_) {
+//      rotated_head_view_ = head_view_;
+//      for (int i = 0; i < 4; ++i) {
+//          for (int j = 0; j < 4; ++j) {
+//              rotated_head_view_.m[i][j] = head_view_.m[i][j];
+//          }
+//      }
+//  }
   // We have to get angles first
   float* eulerAngle = GetEulerAngle(head_view_);
   // if iniAngle is not initialized, press button to initialize it
@@ -438,9 +455,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     Matrix4x4 projection_matrix =
         GetMatrixFromGlArray(projection_matrices_[eye]);
     Matrix4x4 modelview_target = eye_view * model_target_;
-    Matrix4x4 mdoelview_target1 = eye_view * model_target1_;
     modelview_projection_target_ = projection_matrix * modelview_target;
-    mdoelview_projection_target1_ = projection_matrix * mdoelview_target1;
     modelview_projection_room_ = projection_matrix * eye_view;
 
     // Draw room and target
@@ -733,16 +748,6 @@ void HelloCardboardApp::DrawTarget() {
     target_object_not_selected_textures_[cur_target_object_].Bind();
   }
   target_object_meshes_[cur_target_object_].Draw();
-
-//  std::array<float, 16> target_array1 = mdoelview_projection_target1_.ToGlArray();
-//  glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
-//                     target_array1.data());
-//  if(IsPointingAtTarget1()) {
-//    target_object_selected_textures_[cur_target_object_].Bind();
-//  } else {
-//      target_object_not_selected_textures_[cur_target_object_].Bind();
-//  }
-//  target_object_meshes_[cur_target_object_].Draw();
 
   CHECKGLERROR("DrawTarget");
 }
