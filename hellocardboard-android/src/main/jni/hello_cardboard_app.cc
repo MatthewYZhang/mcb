@@ -114,6 +114,8 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_
   first_rotate_ = true;
   out_ = 0.0;
   cnt_ = 0;
+  x_offset = 0.0;
+  z_offset = 0.0;
 }
 
 HelloCardboardApp::~HelloCardboardApp() {
@@ -284,8 +286,7 @@ float HelloCardboardApp::realizationD() {
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
 //    if (tamp != amp4) {
-    float* tmp = GetEulerAngle(head_view_);
-    for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
+//    for (int i = 0; i < 3; ++i) lastKeyAngles[i] = *(tmp+i);
     startTurningBack = false;
 //    }
 
@@ -310,6 +311,34 @@ float HelloCardboardApp::realizationD() {
             rotateM(rotated_head_view_, mainAngle, rotated_head_view_, 0, 1, 0);
         }
     }
+    head_view_ = GetPose();
+
+    double a1 = -asin((double)head_view_.m[1][2]);
+    double a2 = -asin((double)rotated_head_view_.m[1][2]);
+    double c1, c2;
+    if (sqrt((double)(1.0F - (double)head_view_.m[1][2] * (double)head_view_.m[1][2])) >= 0.009999999776482582) {
+        c1 = -atan2((double)(-(double)head_view_.m[1][0]), (double)head_view_.m[1][1]);
+    }
+    else {
+        c1 = -atan2(-(double)head_view_.m[0][1], -(double)head_view_.m[0][0]);
+    }
+
+    if (sqrt((double)(1.0F - (double)rotated_head_view_.m[1][2] * (double)rotated_head_view_.m[1][2])) >= 0.009999999776482582) {
+        c2 = -atan2((double)(-(double)rotated_head_view_.m[1][0]), (double)rotated_head_view_.m[1][1]);
+    }
+    else {
+        c2 = -atan2(-(double)rotated_head_view_.m[0][1], -(double)rotated_head_view_.m[0][0]);
+
+    }
+
+//    x_offset = (asin((double)head_view_.m[1][2]) - asin((double)rotated_head_view_.m[1][2])) * 180 / PI;
+    x_offset = (a1 - a2) * 180 / PI;
+    z_offset = (c1 - c2) * 180 / PI;
+
+
+//    z_offset = *(head_angle + 2) * 180 / PI - *(rotated_angle + 2) * 180 / PI;
+    rotateM(rotated_head_view_, -x_offset, rotated_head_view_, 1, 0, 0);
+    rotateM(rotated_head_view_, -z_offset, rotated_head_view_, 0, 0, 1);
     return tamp;
 }
 
@@ -325,8 +354,13 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     if(isTurningBack) res.push_back(1);
     else res.push_back(0);
     res.push_back(rotated_angle_);
-    for(int i = 0; i < bqueue_.q.size(); i++) {
-        res.push_back(bqueue_.q[i]);
+
+    res.push_back(x_offset);
+    res.push_back(z_offset);
+    res.push_back(asin((double)head_view_.m[1][2]));
+    res.push_back(asin((double)rotated_head_view_.m[1][2]));
+    for(int i = 0; i < bqueue_.q2.size(); i++) {
+        res.push_back(bqueue_.q2[i]);
     }
 //    for (int i = 0; i < 4; ++i) {
 //        for (int j = 0; j < 4; ++j) {
@@ -359,7 +393,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     return;
   }
 
-  bqueue_.insert(angle[1]);
+  bqueue_.insert(angle[1], angle[0], angle[2]);
   lAngle = angle[1];
   // Update Head Pose.
   head_view_ = GetPose();
@@ -375,7 +409,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
   for (int i = 0; i < 3; ++i) {
     angle[i] = *(eulerAngle+i);
 
-    if (PLAN == 1 || PLAN == 2 || PLAN == 4) angle[i] = (angle[i]-iniAngle[i]) * 180 / PI;
+    if (PLAN == 1 || PLAN == 2 || PLAN == 4) angle[i] = (angle[i]-0) * 180 / PI;
     else if (PLAN == 3 || PLAN == 0) angle[i] = (angle[i]-abAngle[i]) * 180 / PI;
   }
   amp = _amp;
@@ -670,6 +704,21 @@ float *HelloCardboardApp::GetEulerAngle(Matrix4x4 mat) {
 
   }
   return var;
+}
+
+double *HelloCardboardApp::GetEulerAngleDouble(Matrix4x4 mat) {
+    double var[3];
+    var[0] = -asin((double)mat.m[1][2]);
+    if (sqrt((double)(1.0F - mat.m[1][2] * mat.m[1][2])) >= 0.009999999776482582) {
+        var[1] = -atan2((double)(-mat.m[0][2]), (double)mat.m[2][2]);
+        var[2] = -atan2((double)(-mat.m[1][0]), (double)mat.m[1][1]);
+    }
+    else {
+        var[1] = 0.0F;
+        var[2] = -atan2(double(mat.m[0][1]), double(mat.m[0][0]));
+
+    }
+    return var;
 }
 
 void HelloCardboardApp::rotateM(ndk_hello_cardboard::Matrix4x4 &ans, float angle,

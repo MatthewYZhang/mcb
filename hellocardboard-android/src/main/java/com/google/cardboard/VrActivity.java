@@ -246,12 +246,12 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             t1.setText(viewAngle+"");
             t2.setText(tamp+"");
             String s = "";
-            for(int i = 9; i < tmp.length; i++) {
+            for(int i = 11; i < tmp.length; i++) {
                 s += " " + tmp[i];
             }
             float turningBack = tmp[7];
             float rotateAngle = tmp[8];
-            Log.e("angleDiff", angleDiff+" "+direction+" "+nowAngle+" "+tamp+" "+turningBack+" "+viewAngle+" "+rotateAngle+" "+s);
+            Log.e("angleDiff", angleDiff+" "+direction+" "+nowAngle+" "+tamp+" "+turningBack+" "+viewAngle+" "+rotateAngle+" "+tmp[9]+" " +tmp[10]+" "+s);
             // show related numbers on screen
             if (counter == 0) {
 //                t1.setText(angleDiff+"");

@@ -43,13 +43,29 @@ namespace ndk_hello_cardboard {
 struct BufferQueue {
     const static int MAX_LEN = 5;
     std::deque<float> q;
-    void insert(float val) {
+    std::deque<float> q2;
+    std::deque<float> q3;
+    void insert(float val, float val2, float val3) {
       if(q.size() >= MAX_LEN) {
         q.pop_front();
         q.push_back(val);
       } else {
         q.push_back(val);
       }
+
+        if(q2.size() >= MAX_LEN) {
+            q2.pop_front();
+            q2.push_back(val2);
+        } else {
+            q2.push_back(val2);
+        }
+
+        if(q3.size() >= MAX_LEN) {
+            q3.pop_front();
+            q3.push_back(val3);
+        } else {
+            q3.push_back(val3);
+        }
     }
     int direction_() {
 
@@ -71,6 +87,20 @@ struct BufferQueue {
         return q.back();
       }
       return 0.0;
+    }
+
+    float last2_() {
+        if (q2.size() >= 1) {
+            return q2.back();
+        }
+        return 0.0;
+    }
+
+    float last3_() {
+        if (q3.size() >= 1) {
+            return q3.back();
+        }
+        return 0.0;
     }
     bool isTurningBack() {
       if(q.size() == 0) return false;
@@ -322,6 +352,10 @@ class HelloCardboardApp {
   float out_;
   bool first_rotate_;
   int cnt_;
+
+  float x_offset;
+  float z_offset;
+  double* GetEulerAngleDouble(Matrix4x4 mat);
 
   std::vector<float> speed = {22.0f, 45.0f, 70.0f};
   const float MULTIPLER = 2.8f;
