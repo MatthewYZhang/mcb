@@ -281,7 +281,10 @@ float HelloCardboardApp::realizationD() {
 
     if(cnt_ < 5) {
         cnt_++;
+        bqueue_.insertHead(angle[1]);
+        bqueue_.insertView(angle[1]);
         rotateM(rotated_head_view_, 0, head_view_, 0, 1, 0);
+        return 1;
     }
     //state changed, record this last key angle，以此作为上一个关键角度来进行旋转
     // 否则利用rotateM会转不动
@@ -290,55 +293,32 @@ float HelloCardboardApp::realizationD() {
     startTurningBack = false;
 //    }
 
+    bqueue_.insertHead(angle[1]);
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
     if (isTurningBack) {
         tamp = viewAngle / angle[1];
         float mainAngle = -(angle[1] - bqueue_.last_()) * tamp;
-        rotateM(rotated_head_view_, mainAngle, rotated_head_view_, 0, 1, 0);
+        rotated_angle_ = angle[1] - bqueue_.view_angle_.back() - (angle[1] - bqueue_.last_()) * tamp;
+        rotateM(rotated_head_view_, rotated_angle_, head_view_, 0, 1, 0);
+        bqueue_.insertView(*(GetEulerAngle(rotated_head_view_)+1)*180/PI);
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
         float mainAngle = -(angle[1] - bqueue_.last_()) * tamp;
-        rotated_angle_ = mainAngle;
-        float cur_virtual = *(GetEulerAngle(rotated_head_view_)+1);
-        if(std::abs(cur_virtual * 180 / PI) + std::abs(rotated_angle_) >= 178.0) {
-            if(cur_virtual > 0) {
-                rotateM(rotated_head_view_, -(175.0 - cur_virtual * 180 / PI), rotated_head_view_, 0, 1, 0);
+        rotated_angle_ = -(bqueue_.view_angle_.back() - angle[1]) + mainAngle;
+
+        if(std::abs(angle[1]) + std::abs(rotated_angle_) >= 178.0) {
+            if(angle[1] < 0) {
+                rotateM(rotated_head_view_, (178.0 + angle[1]), head_view_, 0, 1, 0);
             } else {
-                rotateM(rotated_head_view_, (175.0 + cur_virtual * 180 / PI), rotated_head_view_, 0, 1, 0);
+                rotateM(rotated_head_view_, -(178.0 - angle[1]), head_view_, 0, 1, 0);
             }
         } else {
-            rotateM(rotated_head_view_, mainAngle, rotated_head_view_, 0, 1, 0);
+            rotateM(rotated_head_view_, rotated_angle_, head_view_, 0, 1, 0);
         }
-    }
-    head_view_ = GetPose();
-
-    double a1 = -asin((double)head_view_.m[1][2]);
-    double a2 = -asin((double)rotated_head_view_.m[1][2]);
-    double c1, c2;
-    if (sqrt((double)(1.0F - (double)head_view_.m[1][2] * (double)head_view_.m[1][2])) >= 0.009999999776482582) {
-        c1 = -atan2((double)(-(double)head_view_.m[1][0]), (double)head_view_.m[1][1]);
-    }
-    else {
-        c1 = -atan2(-(double)head_view_.m[0][1], -(double)head_view_.m[0][0]);
-    }
-
-    if (sqrt((double)(1.0F - (double)rotated_head_view_.m[1][2] * (double)rotated_head_view_.m[1][2])) >= 0.009999999776482582) {
-        c2 = -atan2((double)(-(double)rotated_head_view_.m[1][0]), (double)rotated_head_view_.m[1][1]);
-    }
-    else {
-        c2 = -atan2(-(double)rotated_head_view_.m[0][1], -(double)rotated_head_view_.m[0][0]);
+        bqueue_.insertView(*(GetEulerAngle(rotated_head_view_)+1)*180/PI);
 
     }
-
-//    x_offset = (asin((double)head_view_.m[1][2]) - asin((double)rotated_head_view_.m[1][2])) * 180 / PI;
-    x_offset = (a1 - a2) * 180 / PI;
-    z_offset = (c1 - c2) * 180 / PI;
-
-
-//    z_offset = *(head_angle + 2) * 180 / PI - *(rotated_angle + 2) * 180 / PI;
-    rotateM(rotated_head_view_, -x_offset, rotated_head_view_, 1, 0, 0);
-    rotateM(rotated_head_view_, -z_offset, rotated_head_view_, 0, 0, 1);
     return tamp;
 }
 

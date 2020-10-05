@@ -43,8 +43,25 @@ namespace ndk_hello_cardboard {
 struct BufferQueue {
     const static int MAX_LEN = 5;
     std::deque<float> q;
+    std::deque<float> head_angle_, view_angle_;
     std::deque<float> q2;
     std::deque<float> q3;
+    void insertHead(float val) {
+        if(head_angle_.size() >= MAX_LEN) {
+            head_angle_.pop_front();
+            head_angle_.push_back(val);
+        } else {
+            head_angle_.push_back(val);
+        }
+    }
+    void insertView(float val) {
+        if(view_angle_.size() >= MAX_LEN) {
+            view_angle_.pop_front();
+            view_angle_.push_back(val);
+        } else {
+            view_angle_.push_back(val);
+        }
+    }
     void insert(float val, float val2, float val3) {
       if(q.size() >= MAX_LEN) {
         q.pop_front();
