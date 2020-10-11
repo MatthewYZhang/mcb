@@ -243,7 +243,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             }
             // todo: record logic here, when left button is pressed(for the first time), start == true
 //            Log.e("tamp", tamp+"");
-            t1.setText(viewAngle+"");
+            t1.setText(nowAngle+"");
             t2.setText(tamp+"");
             String s = "";
             for(int i = 11; i < tmp.length; i++) {
@@ -251,7 +251,9 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             }
             float turningBack = tmp[7];
             float rotateAngle = tmp[8];
-            Log.e("angleDiff", angleDiff+" "+direction+" "+nowAngle+" "+tamp+" "+turningBack+" "+viewAngle+" "+rotateAngle+" "+tmp[9]+" " +tmp[10]+" "+s);
+            String logStr = String.format("%.2f %.2f %.2f %.2f %f %f\n", nowAngle, viewAngle, tamp, rotateAngle, turningBack, direction);
+//            nowAngle+" "+viewAngle+" "+angleDiff+" "+direction+" "+tamp+" "+turningBack+" "+rotateAngle+" "+tmp[9]+" " +tmp[10]+" "+s
+            Log.e("info", logStr);
             // show related numbers on screen
             if (counter == 0) {
 //                t1.setText(angleDiff+"");
