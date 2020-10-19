@@ -47,8 +47,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 
 JNI_METHOD(jlong, nativeOnCreate)
-(JNIEnv* env, jobject obj, jobject asset_mgr) {
-  return jptr(new ndk_hello_cardboard::HelloCardboardApp(javaVm, obj, asset_mgr));
+(JNIEnv* env, jobject obj, jobject asset_mgr, jint number) {
+  return jptr(new ndk_hello_cardboard::HelloCardboardApp(javaVm, obj, asset_mgr, number));
 }
 
 JNI_METHOD(void, nativeOnDestroy)

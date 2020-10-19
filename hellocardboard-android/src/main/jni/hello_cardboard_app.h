@@ -106,7 +106,7 @@ class HelloCardboardApp {
    * @param obj Android activity object.
    * @param asset_mgr_obj The asset manager object.
    */
-  HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_obj);
+  HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_obj, jint number);
 
   ~HelloCardboardApp();
 
@@ -390,7 +390,7 @@ class HelloCardboardApp {
   float GetAmp(float speed);
 
   int deleted_ball_ = -1;
-  const int NUM_TARGETS = 10;
+  int NUM_TARGETS;
   std::vector<Matrix4x4> model_target_vec_;
   std::vector<Matrix4x4> mvp_target_vec_;
 

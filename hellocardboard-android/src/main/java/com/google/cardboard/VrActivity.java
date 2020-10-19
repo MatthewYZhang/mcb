@@ -50,6 +50,7 @@ import javax.microedition.khronos.opengles.GL10;
 import java.io.File;
 import java.util.Date;
 import java.io.FileOutputStream;
+import java.util.Random;
 
 
 /**
@@ -79,6 +80,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     float direction = 0.0f;
     float viewAngle = 0.0f;
     float tamp = 1.0f;
+    int ball_num;
     float[] rotated;
     float[] origin;
 
@@ -103,7 +105,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     public void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         //date = new Date();
-        nativeApp = nativeOnCreate(getAssets());
+        ball_num = new Random().nextInt(4) + 8;
+        nativeApp = nativeOnCreate(getAssets(), ball_num);
         setContentView(R.layout.activity_vr);
         glView = findViewById(R.id.surface_view);
         glView.setEGLContextClientVersion(2);
@@ -284,7 +287,6 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
         if(start == true) {
             statusButton.setText("S");
             //switch to normal
-            nativeSwitchPlan(nativeApp, 5);
             try {
                 logFile.close();
             } catch(Exception e) {
@@ -293,10 +295,9 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
         } else {
             statusButton.setText("E");
             //switch to auto-rotation
-            nativeSwitchPlan(nativeApp, 2);
             try {
-                logFile = new FileOutputStream(path+"/log-" + targetSpeed + "-" + System.currentTimeMillis() + ".txt");
-                String info = Float.toString(targetSpeed) + "\n";
+                logFile = new FileOutputStream(path+"/log-count-" + System.currentTimeMillis() + ".txt");
+                String info = Integer.toString(ball_num) + "\n";
                 Log.v("Create file", "Create file");
                 logFile.write(info.getBytes());
                 logFile.flush();
@@ -494,7 +495,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
                                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    private native long nativeOnCreate(AssetManager assetManager);
+    private native long nativeOnCreate(AssetManager assetManager, int number);
 
     private native void nativeOnDestroy(long nativeApp);
 

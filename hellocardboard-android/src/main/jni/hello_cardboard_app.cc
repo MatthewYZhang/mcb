@@ -76,7 +76,7 @@ constexpr const char* kObjFragmentShaders =
 
 }  // anonymous namespace
 
-HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_obj)
+HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_obj, jint number)
     : head_tracker_(nullptr),
       lens_distortion_(nullptr),
       distortion_renderer_(nullptr),
@@ -94,7 +94,8 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_
       target_object_meshes_(kTargetMeshCount),
       target_object_not_selected_textures_(kTargetMeshCount),
       target_object_selected_textures_(kTargetMeshCount),
-      cur_target_object_(1) {
+      cur_target_object_(1),
+      NUM_TARGETS(number) {
   JNIEnv* env;
   vm->GetEnv((void**)&env, JNI_VERSION_1_6);
   java_asset_mgr_ = env->NewGlobalRef(asset_mgr_obj);
