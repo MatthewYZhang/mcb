@@ -85,7 +85,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     //Date date;
     int counter = 0;
     int refreshRate = 4;
-    float amp = 1.0f;
+    float amp = 3.0f;
 
     //Control variables for logging
     private boolean start = false;
@@ -235,8 +235,10 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             if (start) {
                 try {
                     //log time, direction, cur angle
-                    String data = System.currentTimeMillis() + "," + angleDiff + "," + nowAngle + "," + direction + "\n";
-                    logFile.write(data.getBytes());
+                    if(tmp[9] != -1) {
+                        String data = System.currentTimeMillis() + "," + angleDiff + "," + nowAngle + "," + direction + "," + tmp[9] + "\n";
+                        logFile.write(data.getBytes());
+                    }
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -251,7 +253,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
             }
             float turningBack = tmp[7];
             float rotateAngle = tmp[8];
-            String logStr = String.format("%.2f %.2f %.2f %.2f %f %f\n", nowAngle, viewAngle, tamp, rotateAngle, turningBack, direction);
+            String logStr = String.format("Head: %.2f View: %.2f Tamp: %.2f rotAngle: %.2f TB: %f Dir: %f Del: %f\n", nowAngle, viewAngle, tamp, rotateAngle, turningBack, direction, tmp[9]);
 //            nowAngle+" "+viewAngle+" "+angleDiff+" "+direction+" "+tamp+" "+turningBack+" "+rotateAngle+" "+tmp[9]+" " +tmp[10]+" "+s
             Log.e("info", logStr);
             // show related numbers on screen

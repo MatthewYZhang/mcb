@@ -169,12 +169,52 @@ void HelloCardboardApp::OnSurfaceCreated(JNIEnv* env) {
 
   // Target object first appears directly in front of user.
 
-  float angle = -PI/2 + (speed[speed_idx_] / 180.0f * PI * MULTIPLER + OFFSET) * dir;
-  float distance = (kMinTargetDistance + kMaxTargetDistance) / 2;
+//  float angle = -PI/2 + (speed[speed_idx_] / 180.0f * PI * MULTIPLER + OFFSET) * dir;
+//  float distance = (kMinTargetDistance + kMaxTargetDistance) / 2;
+//  float height = 1.5f;
+//  std::array<float, 3> target_position = {std::cos(angle) * distance, height,
+//                                          std::sin(angle) * distance};
+//  model_target_ = GetTranslationMatrix(target_position);
+
+  float angle = -M_PI/2 + 0.4*M_PI;
+  float distance = kMinTargetDistance;
   float height = 1.5f;
   std::array<float, 3> target_position = {std::cos(angle) * distance, height,
                                           std::sin(angle) * distance};
   model_target_ = GetTranslationMatrix(target_position);
+
+  angle = -M_PI/2 - 0.4*M_PI;
+  target_position = {std::cos(angle) * distance, height,
+                     std::sin(angle) * distance};
+  model_target1_ = GetTranslationMatrix(target_position);
+
+  float a = - 1.5 * M_PI + 0.1 * M_PI;
+  float interval = 1.8 * M_PI / NUM_TARGETS;
+//  float interval = 0;
+  model_target_vec_.reserve(NUM_TARGETS);
+  for(int i = 0; i < NUM_TARGETS; i++) {
+    float real_a = a + interval / 2 + RandomUniformFloat(-interval/2, interval/2);
+//    float real_a = a;
+    height = RandomUniformFloat(kMinTargetHeight, kMaxTargetHeight);
+    distance = RandomUniformFloat(kMinTargetDistance, kMaxTargetDistance);
+    target_position = {std::cos(real_a) * distance, height,
+                       std::sin(real_a) * distance};
+    Matrix4x4 trans = GetTranslationMatrix(target_position);
+    model_target_vec_[i] = trans;
+    a += interval;
+  }
+
+  model_obstacle_vec_.reserve(OBSTACLE_CNT);
+  for(int i = 0; i < OBSTACLE_CNT; i++) {
+    a = RandomUniformFloat(-M_PI, M_PI);
+//    float real_a = a;
+    height = RandomUniformFloat(kMinTargetHeight, kMaxTargetHeight);
+    distance = RandomUniformFloat(3.0f, kMaxTargetDistance);
+    target_position = {std::cos(a) * distance, height,
+                       std::sin(a) * distance};
+    Matrix4x4 trans = GetTranslationMatrix(target_position);
+    model_obstacle_vec_[i] = trans;
+  }
 
   CHECKGLERROR("OnSurfaceCreated");
 }
@@ -294,28 +334,34 @@ float HelloCardboardApp::realizationD() {
 //    }
 
     bqueue_.insertHead(angle[1]);
+    float last_view = bqueue_.view_angle_.back();
+    if(angle[1] < 0 && bqueue_.view_angle_.back() > 100) {
+      last_view = -360 + last_view;
+    } else if(angle[1] > 0 && bqueue_.view_angle_.back() < -100) {
+      last_view = 360 + last_view;
+    }
     //turning back，这里有bug，屏幕会黑，首先检查viewAngle是否正确
     if (isTurningBack) {
-        tamp = viewAngle / angle[1];
+        tamp = last_view / angle[1];
         float mainAngle = -(angle[1] - bqueue_.last_()) * tamp;
-        rotated_angle_ = angle[1] - bqueue_.view_angle_.back() - (angle[1] - bqueue_.last_()) * tamp;
+        rotated_angle_ = angle[1] - last_view - (angle[1] - bqueue_.last_()) * tamp;
         rotateM(rotated_head_view_, rotated_angle_, head_view_, 0, 1, 0);
         bqueue_.insertView(*(GetEulerAngle(rotated_head_view_)+1)*180/PI);
     }
     // 继续向更大角度转头，则使用tamp作为增益
     else {
         float mainAngle = -(angle[1] - bqueue_.last_()) * tamp;
-        rotated_angle_ = -(bqueue_.view_angle_.back() - angle[1]) + mainAngle;
+        rotated_angle_ = -(last_view - angle[1]) + mainAngle;
 
-        if(std::abs(angle[1]) + std::abs(rotated_angle_) >= 178.0) {
-            if(angle[1] < 0) {
-                rotateM(rotated_head_view_, (178.0 + angle[1]), head_view_, 0, 1, 0);
-            } else {
-                rotateM(rotated_head_view_, -(178.0 - angle[1]), head_view_, 0, 1, 0);
-            }
-        } else {
+//        if(std::abs(angle[1]) + std::abs(rotated_angle_) >= 178.0) {
+//            if(angle[1] < 0) {
+//                rotateM(rotated_head_view_, (178.0 + angle[1]), head_view_, 0, 1, 0);
+//            } else {
+//                rotateM(rotated_head_view_, -(178.0 - angle[1]), head_view_, 0, 1, 0);
+//            }
+//        } else {
             rotateM(rotated_head_view_, rotated_angle_, head_view_, 0, 1, 0);
-        }
+//        }
         bqueue_.insertView(*(GetEulerAngle(rotated_head_view_)+1)*180/PI);
 
     }
@@ -335,13 +381,15 @@ std::vector<float> HelloCardboardApp::ReturnVector() {
     else res.push_back(0);
     res.push_back(rotated_angle_);
 
-    res.push_back(x_offset);
-    res.push_back(z_offset);
+    res.push_back(deleted_ball_);
+    if(deleted_ball_ != -1) {
+      deleted_ball_ = -1;
+    }
     res.push_back(asin((double)head_view_.m[1][2]));
     res.push_back(asin((double)rotated_head_view_.m[1][2]));
-    for(int i = 0; i < bqueue_.q2.size(); i++) {
-        res.push_back(bqueue_.q2[i]);
-    }
+//    for(int i = 0; i < bqueue_.q2.size(); i++) {
+//        res.push_back(bqueue_.q2[i]);
+//    }
 //    for (int i = 0; i < 4; ++i) {
 //        for (int j = 0; j < 4; ++j) {
 //            res.push_back(rotated_head_view_.m[i][j]);
@@ -373,7 +421,7 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     return;
   }
 
-  bqueue_.insert(angle[1], angle[0], angle[2]);
+  bqueue_.insert(angle[1]);
   lAngle = angle[1];
   // Update Head Pose.
   head_view_ = GetPose();
@@ -457,6 +505,18 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
     modelview_projection_target_ = projection_matrix * modelview_target;
     modelview_projection_room_ = projection_matrix * eye_view;
 
+    mvp_target_vec_.reserve(NUM_TARGETS);
+    for(int i = 0; i < NUM_TARGETS; i++) {
+      Matrix4x4 model_view_target = eye_view * model_target_vec_[i];
+      mvp_target_vec_[i] = projection_matrix * model_view_target;
+    }
+
+    mvp_obstacle_vec_.reserve(OBSTACLE_CNT);
+    for(int i = 0; i < OBSTACLE_CNT; i++) {
+      Matrix4x4 model_view_obstacle = eye_view * model_obstacle_vec_[i];
+      mvp_obstacle_vec_[i] = projection_matrix * model_view_obstacle;
+    }
+
     // Draw room and target
     DrawWorld();
   }
@@ -478,17 +538,19 @@ void HelloCardboardApp::OnDrawFrame(float _amp) {
 
 // add new feature in this function
 void HelloCardboardApp::OnTriggerEvent() {
-  if (IsPointingAtTarget()) {
-    HideTarget();
+  for(int i = 0; i < NUM_TARGETS; i++) {
+    if (IsPointingAtTarget(i)) {
+      HideTarget();
+    }
   }
-  else {
+//  else {
 //    float* tmp = GetEulerAngle();
 //    for (int i = 0; i < 3; ++i) {
 //        iniAngle[i] = *(tmp + i);
 //
 //    }
 //    maxAngle = 0.0f;
-  }
+//  }
 }
 
 void HelloCardboardApp::OnPause() { CardboardHeadTracker_pause(head_tracker_); }
@@ -752,16 +814,57 @@ void HelloCardboardApp::DrawWorld() {
 void HelloCardboardApp::DrawTarget() {
   glUseProgram(obj_program_);
 
-  std::array<float, 16> target_array = modelview_projection_target_.ToGlArray();
-  glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
-                     target_array.data());
+//  std::array<float, 16> target_array = modelview_projection_target_.ToGlArray();
+//  glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
+//                     target_array.data());
 
-  if (IsPointingAtTarget()) {
-    target_object_selected_textures_[cur_target_object_].Bind();
-  } else {
-    target_object_not_selected_textures_[cur_target_object_].Bind();
+//  if (IsPointingAtTarget()) {
+//    target_object_selected_textures_[cur_target_object_].Bind();
+//  } else {
+//    target_object_not_selected_textures_[cur_target_object_].Bind();
+//  }
+//  target_object_meshes_[cur_target_object_].Draw();
+
+  for(int i = 0; i < OBSTACLE_CNT; i++) {
+    std::array<float, 16> target_array = mvp_obstacle_vec_[i].ToGlArray();
+    glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
+                       target_array.data());
+    int type = 0;
+    if(i < OBSTACLE_CNT / 2) type = 2;
+    target_object_not_selected_textures_[type].Bind();
+    target_object_meshes_[type].Draw();
   }
-  target_object_meshes_[cur_target_object_].Draw();
+
+  int cur_selected = -1;
+  for(int i = 0; i < NUM_TARGETS; i++) {
+    if(is_present_[i] == false) continue;
+    std::array<float, 16> target_array = mvp_target_vec_[i].ToGlArray();
+    glUniformMatrix4fv(obj_modelview_projection_param_, 1, GL_FALSE,
+                       target_array.data());
+    if(IsPointingAtTarget(i)) {
+      cur_selected = i;
+      target_object_selected_textures_[cur_target_object_].Bind();
+    } else {
+      target_object_not_selected_textures_[cur_target_object_].Bind();
+    }
+    target_object_meshes_[cur_target_object_].Draw();
+  }
+
+  if(cur_selected >= 0) {
+    if(cur_selected == last_ball_selected_) {
+      selected_frames_++;
+      if(selected_frames_ > ACTIVATED_FRAMES) {
+        //delete the ball
+        is_present_[cur_selected] = false;
+        deleted_ball_ = cur_selected;
+        selected_frames_ = 0;
+        last_ball_selected_ = -1;
+      }
+    } else {
+      last_ball_selected_ = cur_selected;
+      selected_frames_ = 1;
+    }
+  }
 
   CHECKGLERROR("DrawTarget");
 }
@@ -791,10 +894,11 @@ void HelloCardboardApp::HideTarget() {
   model_target_ = GetTranslationMatrix(target_position);
 }
 
-bool HelloCardboardApp::IsPointingAtTarget() {
+bool HelloCardboardApp::IsPointingAtTarget(int i) {
   // Compute vectors pointing towards the reticle and towards the target object
   // in head space.
-  Matrix4x4 head_from_target = rotated_head_view_ * model_target_;
+  if(i < 0 || i >= NUM_TARGETS) return false;
+  Matrix4x4 head_from_target = rotated_head_view_ * model_target_vec_[i];
 
   const std::array<float, 4> unit_quaternion = {0.f, 0.f, 0.f, 1.f};
   const std::array<float, 4> point_vector = {0.f, 0.f, -1.f, 0.f};

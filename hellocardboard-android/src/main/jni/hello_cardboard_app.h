@@ -44,8 +44,6 @@ struct BufferQueue {
     const static int MAX_LEN = 5;
     std::deque<float> q;
     std::deque<float> head_angle_, view_angle_;
-    std::deque<float> q2;
-    std::deque<float> q3;
     void insertHead(float val) {
         if(head_angle_.size() >= MAX_LEN) {
             head_angle_.pop_front();
@@ -62,27 +60,13 @@ struct BufferQueue {
             view_angle_.push_back(val);
         }
     }
-    void insert(float val, float val2, float val3) {
+    void insert(float val) {
       if(q.size() >= MAX_LEN) {
         q.pop_front();
         q.push_back(val);
       } else {
         q.push_back(val);
       }
-
-        if(q2.size() >= MAX_LEN) {
-            q2.pop_front();
-            q2.push_back(val2);
-        } else {
-            q2.push_back(val2);
-        }
-
-        if(q3.size() >= MAX_LEN) {
-            q3.pop_front();
-            q3.push_back(val3);
-        } else {
-            q3.push_back(val3);
-        }
     }
     int direction_() {
 
@@ -106,19 +90,6 @@ struct BufferQueue {
       return 0.0;
     }
 
-    float last2_() {
-        if (q2.size() >= 1) {
-            return q2.back();
-        }
-        return 0.0;
-    }
-
-    float last3_() {
-        if (q3.size() >= 1) {
-            return q3.back();
-        }
-        return 0.0;
-    }
     bool isTurningBack() {
       if(q.size() == 0) return false;
 
@@ -311,7 +282,7 @@ class HelloCardboardApp {
    *
    * @return true if the user is pointing at the target object.
    */
-  bool IsPointingAtTarget();
+  bool IsPointingAtTarget(int i);
 
   jobject java_asset_mgr_;
   AAssetManager* asset_mgr_;
@@ -338,7 +309,7 @@ class HelloCardboardApp {
   float abAngle[3];
 
   float rAngle[3];
-  int PLAN = 4;
+  int PLAN = 3;
   // the following members are used by Plan 2
   float flag = 0.0f;
   float theta = 0.0f;
@@ -417,6 +388,20 @@ class HelloCardboardApp {
   int cur_target_object_;
 
   float GetAmp(float speed);
+
+  int deleted_ball_ = -1;
+  const int NUM_TARGETS = 10;
+  std::vector<Matrix4x4> model_target_vec_;
+  std::vector<Matrix4x4> mvp_target_vec_;
+
+  int OBSTACLE_CNT = 3;
+  std::vector<Matrix4x4> model_obstacle_vec_;
+  std::vector<Matrix4x4> mvp_obstacle_vec_;
+
+  const int ACTIVATED_FRAMES = 60; //number of consecutive frames needed to delete a ball
+  std::vector<bool> is_present_ = std::vector<bool>(NUM_TARGETS, true); //whether the target ball is not deleted
+  int last_ball_selected_ = -1;  //the ball selected in the last frame
+  int selected_frames_ = 0; //number of frames gazed at the selected ball
 };
 }  // namespace ndk_hello_cardboard
 
